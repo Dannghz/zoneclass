@@ -1,0 +1,70 @@
+.mi_job {
+  padding: 10px;
+}
+.card {
+  border-radius: 15px;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+.card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2);
+  background: rgb(252, 252, 252);
+}
+
+.mi-body {
+  background-image: url("/static/img/body2.svg");
+  background-repeat: repeat;
+  background-size: 300px;
+  border: 5px solid rgb(133, 133, 133);
+}
+
+.mi_body {
+  background-image:url("/static/img/file.svg");
+  background-repeat: repeat;
+  overflow: hidden;
+}
+
+.sidebar {
+    background: #212529; /* negro tipo Bootstrap */
+    height: 100vh;
+    padding-top: 50px;
+    position: fixed;
+    width: 300px !important; /* ancho fijo */
+    color: white;
+}
+
+/* Título siempre visible */
+.sidebar h4 {
+    padding-left: 35px;
+    margin-bottom: 20px
+}
+
+/* Links */
+.sidebar a {
+    color: white;
+    text-decoration: none;
+    padding: 22px 20px;
+    display: flex;
+    align-items: center;
+    font-size: 1.25rem;
+    gap: 12px;
+    transition: background 0.2s;
+}
+
+/* Hover */
+.sidebar a:hover {
+    background: #343a40; /* gris oscuro */
+}
+
+/* Texto visible siempre */
+.sidebar strong {
+    opacity: 1;
+}
+
+/* Contenido se mueve para no quedar debajo */
+.content {
+    margin-left: 350px; /* espacio del sidebar */
+    padding: 25px;
+}
