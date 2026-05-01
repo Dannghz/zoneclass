@@ -68,3 +68,174 @@
     margin-left: 350px; /* espacio del sidebar */
     padding: 25px;
 }
+
+
+* {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* Contenedor principal que divide la pantalla */
+        .split-container {
+            display: flex;
+            min-height: 100vh;
+            width: 100%;
+        }
+
+        /* =========================================
+           LADO IZQUIERDO: LOGIN (MODERNO Y LLAMATIVO)
+           ========================================= */
+        .left-side {
+            flex: 1; /* Toma la mitad de la pantalla */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #121216; /* Fondo oscuro */
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Tarjeta de login */
+        .login-box {
+            width: 100%;
+            max-width: 400px;
+            background: rgba(30, 30, 40, 0.8);
+            padding: 3rem 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            z-index: 2;
+        }
+
+        /* Título con gradiente llamativo */
+        .login-box h2 {
+            margin-bottom: 2rem;
+            font-size: 2.2rem;
+            text-align: center;
+            background: linear-gradient(45deg, #00dbde, #fc00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #b3b3b3;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            background: #2a2a35;
+            color: #ffffff;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        /* Efecto de brillo al hacer clic en el input */
+        .input-group input:focus {
+            box-shadow: 0 0 12px rgba(252, 0, 255, 0.4);
+            background: #323240;
+        }
+
+        /* Botón de Enviar (Submit) */
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            margin-top: 1rem;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(45deg, #00dbde, #fc00ff);
+            color: white;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(252, 0, 255, 0.3);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(252, 0, 255, 0.5);
+        }
+
+        /* Botón Extra (Ajustable) */
+        .btn-extra {
+          display: block;
+            width: 100%;
+            padding: 14px;
+            margin-top: 1rem;
+
+            border-radius: 10px;
+            background: linear-gradient(45deg, #987cfd, #6f00ff);
+            color: #dcdddd;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            text-decoration: none;
+            font-size: 1.1rem;
+        }
+
+        .btn-extra:hover {
+            box-shadow: 0 6px 20px rgba(252, 0, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        /* =========================================
+           LADO DERECHO: INFORMACIÓN
+           ========================================= */
+        .right-side {
+            flex: 1; /* Toma la otra mitad de la pantalla */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: #f4f7f6; /* Fondo claro para contrastar */
+            padding: 3rem;
+            color: #333;
+            text-align: center;
+        }
+
+        .info-content {
+            max-width: 500px;
+        }
+
+        .info-content h1 {
+            font-size: 2.5rem;
+            color: #1a1a24;
+            margin-bottom: 1rem;
+        }
+
+        .info-content p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #666;
+        }
+
+        /* =========================================
+           RESPONSIVE: AJUSTE PARA PANTALLAS PEQUEÑAS
+           ========================================= */
+        @media (max-width: 768px) {
+            .split-container {
+                flex-direction: column; /* Apila los lados verticalmente */
+            }
+            .left-side, .right-side {
+                min-height: 50vh; /* Cada lado toma la mitad del alto en móviles */
+                padding: 2rem 1rem;
+            }
+        }

@@ -7,9 +7,120 @@ app = Flask(__name__, template_folder="templates")
 cursor = db.conexion.cursor()
 
 
+
 @app.route("/")
+def init():
+    return redirect(url_for("login"))
+
+
+
+# USUARIOS-------------------------------------------------------------------------------------------------------#
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+
+    if request.method == "POST":
+
+        email = request.form["email"]
+        contrasena = request.form["contrasena"]
+
+        cursor = db.conexion.cursor(dictionary=True)
+
+        cursor.execute(
+            "SELECT * FROM usuarios WHERE email=%s AND contrasena=%s",
+            (email, contrasena),
+        )
+
+        user = cursor.fetchone()
+        cursor.close()
+
+        if user:
+
+            # 🔥 Validar rol
+            if user["rol"] == "ADMIN":
+                return redirect(url_for("home"))
+
+            elif user["rol"] == "USUARIO":
+                return redirect(url_for("menuUser"))
+
+            else:
+                error = "Rol no válido"
+                return render_template("VisUSERT/login.html", error=error)
+
+        else:
+            error = "Correo o contraseña incorrectos"
+            return render_template("VisUSERT/login.html", error=error)
+
+    return render_template("VisUSERT/login.html")
+
+
+
+@app.route("/register", methods=["GET", "POST"])
+def register():
+
+    if request.method == "POST":
+
+        nombre = request.form["nombre"]
+        email = request.form["email"]
+        contrasena = request.form["contrasena"]
+        rol = request.form["rol"]
+        fecha_registro = request.form["fecha_registro"]
+
+        error = None
+
+        if len(nombre) < 3:
+            error = "Nombre muy corto"
+
+        if not email or "@" not in email:
+            error = "Email inválido"
+
+        if len(contrasena) < 5:
+            error = "Contraseña muy corta"
+
+        fecha = datetime.strptime(fecha_registro, "%Y-%m-%d").date()
+
+        if fecha > date.today():
+            error = "No se permiten fechas futuras"
+
+        if error:
+            return render_template("VisUSERT/register.html", error=error)
+
+        try:
+
+            cursor = db.conexion.cursor()
+
+            cursor.execute(
+                """
+                INSERT INTO usuarios (nombre,email,contrasena,rol,fecha_registro)
+                VALUES (%s,%s,%s,%s,%s)
+                """,
+                (nombre, email, contrasena, rol, fecha_registro),
+            )
+
+            db.conexion.commit()
+            cursor.close()
+
+            # 🔥 Redirige al login después de registrarse
+            return redirect(url_for("login"))
+
+        except Exception as e:
+            db.conexion.rollback()
+            return render_template("VisUSERT/register.html", error=str(e))
+
+    return render_template("VisUSERT/register.html")
+
+
+
+@app.route("/menuUser")
+def menuUser():
+    return render_template("VisUSERT/menu.html")
+
+
+# ADMIN-------------------------------------------------------------------------------------------------------#
+
+@app.route("/admin")
 def home():
-    return render_template("index.html")
+    return render_template("admin/index.html")
 
 
 # USERS-------------------------------------------------------------------------------------------------------#
