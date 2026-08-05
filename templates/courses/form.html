@@ -36,10 +36,15 @@
 
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Descripción</label><textarea class="form-control" rows="3"
-                            name="descripcion"
-                            placeholder="Descripción del curso">{{ curso.descripcion if curso else '' }}</textarea>
+                        <label class="form-label">Descripción</label>
+                        <textarea class="form-control" rows="3"name="descripcion"placeholder="Descripción del curso">{{ curso.descripcion if curso else '' }}</textarea>
                     </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Contenido</label>
+                        <textarea class="form-control" rows="3" name="contenido" placeholder="Contenido del curso">{{ curso.contenido if curso else '' }}</textarea>
+                    </div>
+                    
                     <div class="mb-3"><label class="form-label">Instructor</label>
 
                         <select name="profesor_id" class="form-control select-profesor">{% for profesor in profesores %}

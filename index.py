@@ -1,20 +1,22 @@
-from flask import Flask, render_template, redirect, url_for,request
+from flask import Flask, render_template, redirect, url_for, request, session
 import database as db
 from datetime import datetime, date
 
 app = Flask(__name__, template_folder="templates")
-
+app.secret_key = "clave_super_secreta"
 cursor = db.conexion.cursor()
 
 
-
 @app.route("/")
-def init():
+def logout():
+
+    session.clear()
+
     return redirect(url_for("login"))
 
 
+# login-------------------------------------------------------------------------------------------------------#
 
-# USUARIOS-------------------------------------------------------------------------------------------------------#
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -27,33 +29,46 @@ def login():
         cursor = db.conexion.cursor(dictionary=True)
 
         cursor.execute(
-            "SELECT * FROM usuarios WHERE email=%s AND contrasena=%s",
+            """
+            SELECT * FROM usuarios
+            WHERE email=%s
+            AND contrasena=%s
+            """,
             (email, contrasena),
         )
 
         user = cursor.fetchone()
+
         cursor.close()
 
         if user:
 
-            # 🔥 Validar rol
+            # 🔥 GUARDAR SESIÓN
+            session["user_id"] = user["id"]
+            session["nombre"] = user["nombre"]
+            session["rol"] = user["rol"]
+
+            # 🔥 REDIRECCIONES
             if user["rol"] == "ADMIN":
+
                 return redirect(url_for("home"))
 
             elif user["rol"] == "USUARIO":
+
                 return redirect(url_for("menuUser"))
 
-            else:
-                error = "Rol no válido"
-                return render_template("VisUSERT/login.html", error=error)
-
+            elif user["rol"] == "PROFESOR":
+            
+                return redirect(url_for("menuInstru"))
         else:
+
             error = "Correo o contraseña incorrectos"
+
             return render_template("VisUSERT/login.html", error=error)
 
     return render_template("VisUSERT/login.html")
 
-
+# Registro-------------------------------------------------------------------------------------------------------#
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
@@ -61,6 +76,7 @@ def register():
     if request.method == "POST":
 
         nombre = request.form["nombre"]
+        edad = request.form["edad"]
         email = request.form["email"]
         contrasena = request.form["contrasena"]
         rol = request.form["rol"]
@@ -91,10 +107,10 @@ def register():
 
             cursor.execute(
                 """
-                INSERT INTO usuarios (nombre,email,contrasena,rol,fecha_registro)
-                VALUES (%s,%s,%s,%s,%s)
+                INSERT INTO usuarios (nombre,edad,email,contrasena,rol,fecha_registro)
+                VALUES (%s,%s,%s,%s,%s,%s)
                 """,
-                (nombre, email, contrasena, rol, fecha_registro),
+                (nombre, edad, email, contrasena, rol, fecha_registro),
             )
 
             db.conexion.commit()
@@ -109,18 +125,284 @@ def register():
 
     return render_template("VisUSERT/register.html")
 
-
+# Menu Usuarios-------------------------------------------------------------------------------------------------------#
 
 @app.route("/menuUser")
 def menuUser():
-    return render_template("VisUSERT/menu.html")
 
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    usuario_id = session["user_id"]
+
+    cursor = db.conexion.cursor(dictionary=True)
+
+    # 🔥 TODOS LOS CURSOS
+
+
+    # 🔥 CURSOS INSCRITOS
+    cursor.execute(
+        """
+        SELECT
+    cursos.*,
+    COUNT(DISTINCT lecciones.id) AS total_lecciones,
+    COUNT(DISTINCT inscripciones.usuario_id) AS total_estudiantes
+        FROM cursos
+    LEFT JOIN lecciones
+    ON cursos.id = lecciones.curso_id
+    LEFT JOIN inscripciones
+    ON cursos.id = inscripciones.curso_id
+    GROUP BY cursos.id
+        """
+    )
+
+    cursos = cursor.fetchall()
+
+    cursor.close()
+    
+    return render_template("VisUSERT/menu.html", cursos=cursos)
+
+# Perfil USERS-------------------------------------------------------------------------------------------------------#
+
+
+@app.route("/profile")
+def profile():
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    usuario_id = session["user_id"]
+
+    cursor = db.conexion.cursor(dictionary=True)
+
+    # Datos del usuario
+    cursor.execute("""
+        SELECT
+            id,
+            foto,
+            nombre,
+            edad,
+            email
+        FROM usuarios
+        WHERE id = %s
+    """, (usuario_id,))
+
+    usuario = cursor.fetchone()
+
+    # Cursos inscritos
+    cursor.execute("""
+        SELECT
+            cursos.*,
+            COUNT(DISTINCT lecciones.id) AS total_lecciones
+        FROM cursos
+        INNER JOIN inscripciones
+            ON cursos.id = inscripciones.curso_id
+        LEFT JOIN lecciones
+            ON cursos.id = lecciones.curso_id
+        WHERE inscripciones.usuario_id = %s
+        GROUP BY cursos.id
+    """, (usuario_id,))
+
+    cursos = cursor.fetchall()
+
+    cursor.execute("""
+     select
+        intereses
+     FROM inscripciones
+     WHERE usuario_id = %s
+    """, (usuario_id,))
+
+    intereses = cursor.fetchall()
+
+    cursor.close()
+
+    return render_template(
+        "VisUSERT/perfil.html",
+        usuario=usuario,
+        cursos=cursos,
+        intereses=intereses
+    )
+
+#Miscursos-------------------------------------------------------------------------------------------------------#
+
+@app.route("/miscursos")
+def miscursos():
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    usuario_id = session["user_id"]
+
+    cursor = db.conexion.cursor(dictionary=True)
+
+    cursor.execute("""
+            SELECT
+                cursos.*,
+                COUNT(DISTINCT lecciones.id) AS total_lecciones
+            FROM cursos
+            INNER JOIN inscripciones
+                ON cursos.id = inscripciones.curso_id
+            LEFT JOIN lecciones
+                ON cursos.id = lecciones.curso_id
+            WHERE inscripciones.usuario_id = %s
+            GROUP BY cursos.id
+        """, (usuario_id,))
+
+    cursos = cursor.fetchall()
+
+    cursor.close()
+
+    return render_template(
+        "VisUSERT/miscursos.html",
+        cursos=cursos
+    )
+
+#VistaCursos ----------------------------------------------------------------------------------------------------------#
+@app.route("/view_course/<int:curso_id>")
+def view_course(curso_id):
+
+    cursor = db.conexion.cursor(dictionary=True)
+
+    # =====================================
+    # TRAER CURSO + NOMBRE DEL PROFESOR
+    # =====================================
+    cursor.execute(
+        """
+        SELECT 
+            cursos.*,
+            usuarios.nombre AS profesor_nombre
+
+        FROM cursos
+
+        INNER JOIN usuarios
+        ON usuarios.id = cursos.profesor_id
+
+        WHERE cursos.id=%s
+        """,
+        (curso_id,),
+    )
+
+    curso = cursor.fetchone()
+
+    # =====================================
+    # TRAER LECCIONES DEL CURSO
+    # =====================================
+    cursor.execute(
+        """
+        SELECT *
+        FROM lecciones
+        WHERE curso_id=%s
+        """,
+        (curso_id,),
+    )
+
+    lecciones = cursor.fetchall()
+
+    cursor.close()
+
+    return render_template(
+        "VisUSERT/view_course.html",
+        curso=curso,
+        lecciones=lecciones,
+    )
+
+#Vistalecciones ----------------------------------------------------------------------------------------------------------#
+
+@app.route("/view_lesson/<int:id>")
+def view_lesson(id):
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    cursor = db.conexion.cursor(dictionary=True)
+
+    # Obtener la información de la lección
+    cursor.execute("""
+        SELECT *
+        FROM lecciones
+        WHERE id = %s
+    """, (id,))
+
+    leccion = cursor.fetchone()
+
+    if not leccion:
+        cursor.close()
+        return "Lección no encontrada", 404
+
+    # Obtener los archivos PDF de esa lección
+    cursor.execute("""
+        SELECT *
+        FROM archivospdf
+        WHERE leccion_id = %s
+        ORDER BY id
+    """, (id,))
+
+    archivos_pdf = cursor.fetchall()
+
+    cursor.close()
+
+    return render_template(
+        "VisUSERT/leccion.html",
+        leccion=leccion,
+        archivos_pdf=archivos_pdf
+    )
+
+# Menu Usuarios-------------------------------------------------------------------------------------------------------#
+
+@app.route("/menuInstru/<int:id>")
+def menuInstru(id):
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    cursor = db.conexion.cursor(dictionary=True)
+
+    # 🔥 TODOS LOS CURSOS
+    cursor.execute(
+            """
+            SELECT
+        cursos.*,
+        COUNT(DISTINCT lecciones.id) AS total_lecciones,
+        COUNT(DISTINCT inscripciones.usuario_id) AS total_estudiantes
+            FROM cursos
+        LEFT JOIN lecciones
+        ON cursos.id = lecciones.curso_id
+        LEFT JOIN inscripciones
+        ON cursos.id = inscripciones.curso_id
+        GROUP BY cursos.id
+            """,(id,)
+        )
+
+    profe=cursor.fetchall()
+    # 🔥 CURSOS INSCRITOS
+    cursor.execute(
+        """
+        SELECT
+    cursos.*,
+    COUNT(DISTINCT lecciones.id) AS total_lecciones,
+    COUNT(DISTINCT inscripciones.usuario_id) AS total_estudiantes
+        FROM cursos
+    LEFT JOIN lecciones
+    ON cursos.id = lecciones.curso_id
+    LEFT JOIN inscripciones
+    ON cursos.id = inscripciones.curso_id
+    GROUP BY cursos.id
+        """
+    )
+
+    cursos = cursor.fetchall()
+
+    cursor.close()
+    
+    return render_template("VisINSTRU/menuInstru.html", cursos=cursos, profe=profe)
 
 # ADMIN-------------------------------------------------------------------------------------------------------#
+
 
 @app.route("/admin")
 def home():
     return render_template("admin/index.html")
+
 
 
 # USERS-------------------------------------------------------------------------------------------------------#
@@ -146,6 +428,7 @@ def add_user():
     if request.method == "POST":
 
         nombre = request.form["nombre"]
+        edad = request.form["edad"]
         email = request.form["email"]
         contrasena = request.form["contrasena"]
         rol = request.form["rol"]
@@ -157,11 +440,16 @@ def add_user():
         if len(nombre) < 3:
             error = "Nombre muy corto"
 
+        if edad > 120 or edad < 0:
+            error = "Edad inválida"
+
         if not email or "@" not in email:
             error = "Email inválido"
 
         if len(contrasena) < 5:
             error = "Contraseña muy corta"
+
+            
 
         fecha = datetime.strptime(fecha_registro, "%Y-%m-%d").date()
 
@@ -177,10 +465,10 @@ def add_user():
 
             cursor.execute(
                 """
-            INSERT INTO usuarios (nombre,email,contrasena,rol,fecha_registro)
-            VALUES (%s,%s,%s,%s,%s)
+            INSERT INTO usuarios (nombre,edad,email,contrasena,rol,fecha_registro)
+            VALUES (%s,%s,%s,%s,%s,%s)
             """,
-                (nombre, email, contrasena, rol, fecha_registro),
+                (nombre,edad, email, contrasena, rol, fecha_registro),
             )
 
             db.conexion.commit()
@@ -205,6 +493,7 @@ def edit_user(id):
     if request.method == "POST":
 
         nombre = request.form["nombre"]
+        edad = request.form["edad"]
         email = request.form["email"]
         contrasena = request.form["contrasena"]
         rol = request.form["rol"]
@@ -213,10 +502,10 @@ def edit_user(id):
         cursor.execute(
             """
         UPDATE usuarios
-        SET nombre=%s,email=%s,contrasena=%s,rol=%s,fecha_registro=%s
+        SET nombre=%s,edad=%s,email=%s,contrasena=%s,rol=%s,fecha_registro=%s
         WHERE id=%s
         """,
-            (nombre, email, contrasena, rol, fecha_registro, id),
+            (nombre, edad, email, contrasena, rol, fecha_registro, id),
         )
 
         db.conexion.commit()
@@ -265,13 +554,11 @@ def add_course():
     cursor = db.conexion.cursor(dictionary=True)
 
     # 🔹 Traer instructores para el select
-    cursor.execute(
-        """
+    cursor.execute("""
     SELECT id, nombre
     FROM usuarios
     WHERE rol = 'PROFESOR'
-    """
-    )
+    """)
 
     profesores = cursor.fetchall()
 
@@ -279,6 +566,7 @@ def add_course():
 
         titulo = request.form["titulo"]
         descripcion = request.form["descripcion"]
+        contenido = request.form["contenido"]
         profesor_id = request.form["profesor_id"]
         fecha_creacion = request.form["fecha_creacion"]
 
@@ -296,10 +584,10 @@ def add_course():
 
             cursor.execute(
                 """
-            INSERT INTO cursos (titulo, descripcion, profesor_id, fecha_creacion)
-            VALUES (%s,%s,%s,%s)
+            INSERT INTO cursos (titulo, descripcion, contenido, profesor_id, fecha_creacion)
+            VALUES (%s,%s,%s,%s,%s)
             """,
-                (titulo, descripcion, profesor_id, fecha_creacion),
+                (titulo, descripcion, contenido, profesor_id, fecha_creacion),
             )
 
             db.conexion.commit()
@@ -309,7 +597,9 @@ def add_course():
         except Exception as e:
 
             db.conexion.rollback()
-            return render_template("courses/form.html", error=str(e), profesores=profesores)
+            return render_template(
+                "courses/form.html", error=str(e), profesores=profesores
+            )
 
     return render_template("courses/form.html", profesores=profesores)
 
@@ -320,19 +610,18 @@ def edit_course(id):
     cursor = db.conexion.cursor(dictionary=True)
 
     # traer instructores
-    cursor.execute(
-        """
+    cursor.execute("""
     SELECT id, nombre
     FROM usuarios
     WHERE rol='PROFESOR'
-    """
-    )
+    """)
     profesores = cursor.fetchall()
 
     if request.method == "POST":
 
         titulo = request.form["titulo"]
         descripcion = request.form["descripcion"]
+        contenido = request.form["contenido"]
         profesor_id = request.form["profesor_id"]
         fecha_creacion = request.form["fecha_creacion"]
 
@@ -351,10 +640,10 @@ def edit_course(id):
         cursor.execute(
             """
         UPDATE cursos
-        SET titulo=%s, descripcion=%s, profesor_id=%s, fecha_creacion=%s
+        SET titulo=%s, descripcion=%s, contenido=%s, profesor_id=%s, fecha_creacion=%s
         WHERE id=%s
         """,
-            (titulo, descripcion, profesor_id, fecha_creacion, id),
+            (titulo, descripcion, contenido, profesor_id, fecha_creacion, id),
         )
 
         db.conexion.commit()
@@ -403,12 +692,10 @@ def add_lesson():
     cursor = db.conexion.cursor(dictionary=True)
 
     # 🔹 Traer instructores para el select
-    cursor.execute(
-        """
+    cursor.execute("""
     SELECT id, titulo
     FROM cursos
-    """
-    )
+    """)
 
     cursos = cursor.fetchall()
 
@@ -416,6 +703,7 @@ def add_lesson():
 
         curso_id = request.form["curso_id"]
         titulo = request.form["titulo"]
+        vistaPreviaCon = request.form["vistaPreviaCon"]
         contenido = request.form["contenido"]
         url_recurso = request.form["url_recurso"]
 
@@ -423,10 +711,10 @@ def add_lesson():
 
             cursor.execute(
                 """
-            INSERT INTO lecciones (curso_id,titulo,contenido,url_recurso)
-            VALUES (%s,%s,%s,%s)
+            INSERT INTO lecciones (curso_id,titulo,vistaPreviaCon,contenido,url_recurso)
+            VALUES (%s,%s,%s,%s,%s)
             """,
-                (curso_id, titulo, contenido, url_recurso),
+                (curso_id, titulo, vistaPreviaCon, contenido, url_recurso),
             )
 
             db.conexion.commit()
@@ -447,12 +735,10 @@ def edit_lesson(id):
     cursor = db.conexion.cursor(dictionary=True)
 
     # 🔹 Traer instructores para el select
-    cursor.execute(
-        """
+    cursor.execute("""
     SELECT id, titulo
     FROM cursos
-    """
-    )
+    """)
 
     cursos = cursor.fetchall()
 
@@ -460,15 +746,16 @@ def edit_lesson(id):
 
         curso_id = request.form["curso_id"]
         titulo = request.form["titulo"]
+        vistaPreviaCon = request.form["vistaPreviaCon"]
         contenido = request.form["contenido"]
         url_recurso = request.form["url_recurso"]
 
         cursor.execute(
             """
-        UPDATE lecciones SET curso_id=%s,titulo=%s,contenido=%s,url_recurso=%s
+        UPDATE lecciones SET curso_id=%s,titulo=%s,vistaPreviaCon=%s,contenido=%s,url_recurso=%s
         
         """,
-            (curso_id, titulo, contenido, url_recurso),
+            (curso_id, titulo, vistaPreviaCon, contenido, url_recurso),
         )
 
         db.conexion.commit()
@@ -493,289 +780,10 @@ def deleteLES(id):
     return redirect(url_for("lessons"))
 
 
-# LESSON_NOTES-----------------------------------------------------------------------------------------------#
 
-
-@app.route("/lesson_notes", methods=["GET"])
-def lesson_notes():
-    if db.conexion.is_connected():
-        cursor = db.conexion.cursor()
-        cursor.execute("SELECT * FROM nota_leccion")
-        myresult = cursor.fetchall()
-        insertObject = []
-        columnNames = [column[0] for column in cursor.description]
-        for record in myresult:
-            insertObject.append(dict(zip(columnNames, record)))
-        cursor.close()
-    return render_template("notes/lesson_notes.html", data=insertObject)
-
-
-@app.route("/form_notes", methods=["GET", "POST"])
-def add_notes():
-
-    cursor = db.conexion.cursor(dictionary=True)
-
-    # 🔹 LECCIONES
-    cursor.execute("SELECT id, titulo FROM lecciones")
-    lecciones = cursor.fetchall()
-
-    # 🔹 USUARIOS
-    cursor.execute("SELECT id, nombre FROM usuarios")
-    users = cursor.fetchall()
-
-    if request.method == "POST":
-
-        lecciones_id = request.form["lecciones_id"]
-        usuarios_id = request.form["usuarios_id"]
-        notas = request.form["notas"]
-        estado = request.form["estado"]
-        fecha_registro = request.form["fecha_registro"]
-
-        print(lecciones_id, usuarios_id, notas, estado, fecha_registro)
-
-        error = None
-
-        fecha = datetime.strptime(fecha_registro, "%Y-%m-%d").date()
-
-        if fecha > date.today():
-            error = "No se permiten fechas futuras"
-
-        if error:
-            return render_template(
-                "notes/form.html", error=error, lecciones=lecciones, users=users
-            )
-
-        try:
-            cursor.execute(
-                """
-                INSERT INTO nota_leccion 
-                (lecciones_id, usuarios_id, notas, estado, fecha_registro)
-                VALUES (%s,%s,%s,%s,%s)
-            """,
-                (lecciones_id, usuarios_id, notas, estado, fecha_registro),
-            )
-
-            db.conexion.commit()
-            cursor.close()
-
-            return redirect(url_for("lesson_notes"))
-
-        except Exception as e:
-            db.conexion.rollback()
-            return render_template(
-                "notes/form.html", error=str(e), lecciones=lecciones, users=users
-            )
-
-    return render_template("notes/form.html", lecciones=lecciones, users=users)
-
-
-@app.route("/edit_notes/<int:id>", methods=["GET", "POST"])
-def edit_notes(id):
-
-    cursor = db.conexion.cursor(dictionary=True)
-
-    # 🔹 selects
-    cursor.execute("SELECT id, titulo FROM lecciones")
-    lecciones = cursor.fetchall()
-
-    cursor.execute("SELECT id, nombre FROM usuarios")
-    users = cursor.fetchall()
-
-    if request.method == "POST":
-
-        lecciones_id = request.form["lecciones_id"]
-        usuarios_id = request.form["usuarios_id"]
-        notas = request.form["notas"]
-        estado = request.form["estado"]
-        fecha_registro = request.form["fecha_registro"]
-
-        error = None
-
-        fecha = datetime.strptime(fecha_registro, "%Y-%m-%d").date()
-
-        if fecha > date.today():
-            error = "No se permiten fechas futuras"
-
-        if error:
-            return render_template(
-                "notes/form.html",
-                error=error,
-                lecciones=lecciones,
-                users=users,
-            )
-
-        cursor.execute("""UPDATE nota_leccion SET lecciones_id=%s, usuarios_id=%s, notas=%s, estado=%s, fecha_registro=%s WHERE id=%s """,
-            (lecciones_id, usuarios_id, notas, estado, fecha_registro, id),
-        )
-
-        db.conexion.commit()
-
-        return redirect(url_for("lesson_notes"))
-
-    # 🔹 traer dato
-    cursor.execute("SELECT * FROM nota_leccion WHERE id=%s", (id,))
-    nota_lesson = cursor.fetchone()
-
-    cursor.close()
-
-    return render_template(
-        "notes/form.html", lecciones=lecciones, users=users, nota_lesson=nota_lesson
-    )
-
-
-@app.route("/deleteLES/<string:id>", methods=["POST"])
-def deleteNOT(id):
-    cursor = db.conexion.cursor()
-    sql = "DELETE FROM nota_leccion WHERE id = %s"
-    data = (id,)
-    cursor.execute(sql, data)
-    db.conexion.commit()
-    return redirect(url_for("lesson_notes"))
-
-
-# PROGRESS------------------------------------------------------------------------------------------------#
-
-
-@app.route("/course_progress", methods=["GET"])
-def course_progress():
-    if db.conexion.is_connected():
-        cursor = db.conexion.cursor()
-        cursor.execute("SELECT * FROM progreso_curso")
-        myresult = cursor.fetchall()
-        insertObject = []
-        columnNames = [column[0] for column in cursor.description]
-        for record in myresult:
-            insertObject.append(dict(zip(columnNames, record)))
-        cursor.close()
-    return render_template("course_progress/course_progress.html", data=insertObject)
-
-
-@app.route("/form_progres", methods=["GET", "POST"])
-def add_prog():
-
-    cursor = db.conexion.cursor(dictionary=True)
-    
-    cursor.execute("SELECT id, nombre FROM usuarios")
-    users = cursor.fetchall()
-
-    # 🔹 LECCIONES
-    cursor.execute("SELECT id, titulo FROM cursos")
-    lecciones = cursor.fetchall()
-
-
-    if request.method == "POST":
-
-        usuario_id = request.form["usuario_id"]
-        curso_id = request.form["curso_id"]
-        progreso = request.form["progreso"]
-        nota_final = request.form["nota_final"]
-        estado = request.form["estado"]
-        fecha_actualizacion = request.form["fecha_actualizacion"]
-
-        error = None
-
-        fecha = datetime.strptime(fecha_actualizacion, "%Y-%m-%d").date()
-
-        if fecha > date.today():
-            error = "No se permiten fechas futuras"
-
-        if error:
-            return render_template(
-                "notes/form.html",
-                error=error,
-                lecciones=lecciones,
-                users=users,
-            )
-
-        try:
-            cursor.execute(
-                """
-                INSERT INTO progreso_curso 
-                (usuario_id, curso_id, progreso, nota_final, estado ,fecha_actualizacion)
-                VALUES (%s,%s,%s,%s,%s,%s)
-            """,
-                (usuario_id, curso_id, progreso, nota_final, estado ,fecha_actualizacion),
-            )
-            db.conexion.commit()
-            cursor.close()
-
-            return redirect(url_for("course_progress"))
-
-        except Exception as e:
-            db.conexion.rollback()
-            return render_template(
-                "course_progress/form.html", error=str(e), lecciones=lecciones, users=users
-            )
-
-    return render_template("course_progress/form.html", lecciones=lecciones, users=users)
-
-@app.route("/edit_progress/<int:id>", methods=["GET", "POST"])
-def edit_prog(id):
-
-    cursor = db.conexion.cursor(dictionary=True)
-
-    # 🔹 LECCIONES
-    cursor.execute("SELECT id, titulo FROM cursos")
-    lecciones = cursor.fetchall()
-
-    # 🔹 USUARIOS
-    cursor.execute("SELECT id, nombre FROM usuarios")
-    users = cursor.fetchall()
-
-    if request.method == "POST":
-
-        usuario_id = request.form["usuario_id"]
-        curso_id = request.form["curso_id"]
-        progreso = request.form["progreso"]
-        nota_final = request.form["nota_final"]
-        estado = request.form["estado"]
-        fecha_actualizacion = request.form["fecha_actualizacion"]
-
-        error = None
-
-        fecha = datetime.strptime(fecha_actualizacion, "%Y-%m-%d").date()
-
-        if fecha > date.today():
-            error = "No se permiten fechas futuras"
-
-        if error:
-            return render_template(
-                "notes/form.html",
-                error=error,
-                lecciones=lecciones,
-                users=users,
-            )
-
-        cursor.execute("""UPDATE progreso_curso  SET usuario_id=%s,curso_id=%s, progreso =%s, nota_final=%s, estado=%s, fecha_actualizacion=%s WHERE id=%s """,
-            (usuario_id, curso_id, progreso, nota_final, estado ,fecha_actualizacion,id),
-        )
-
-        db.conexion.commit()
-
-        return redirect(url_for("course_progress"))
-
-    # 🔹 traer dato
-    cursor.execute("SELECT * FROM progreso_curso WHERE id=%s", (id,))
-    nota_lesson = cursor.fetchone()
-
-    cursor.close()
-
-    return render_template(
-        "course_progress/form.html", lecciones=lecciones, users=users, nota_lesson=nota_lesson
-    )
-
-@app.route("/deletePRO/<string:id>", methods=["POST"])
-def deletePRO(id):
-    cursor = db.conexion.cursor()
-    sql = "DELETE FROM progreso_curso WHERE id = %s"
-    data = (id,)
-    cursor.execute(sql, data)
-    db.conexion.commit()
-    return redirect(url_for("course_progress"))
 
 
 # VALIDATION-----------------------------------------------------------------------------------------------#
-
 
 
 @app.route("/instructor_validation", methods=["GET"])
@@ -796,14 +804,13 @@ def instructor_validation():
 def add_valid():
 
     cursor = db.conexion.cursor(dictionary=True)
-    
+
     cursor.execute("SELECT id, nombre FROM usuarios")
     users = cursor.fetchall()
 
     # 🔹 LECCIONES
     cursor.execute("SELECT id, titulo FROM cursos")
     lecciones = cursor.fetchall()
-
 
     if request.method == "POST":
 
@@ -812,7 +819,7 @@ def add_valid():
         estado = request.form["estado"]
         documentoPDF = request.form["documentoPDF"]
         fechaEnvio = request.form["fechaEnvio"]
-        fechaRevision= request.form["fechaRevision"]
+        fechaRevision = request.form["fechaRevision"]
 
         error = None
 
@@ -820,8 +827,8 @@ def add_valid():
 
         if fecha > date.today():
             error = "No se permiten fechas futuras"
-            
-        fecha = datetime.strptime(fechaRevision , "%Y-%m-%d").date()
+
+        fecha = datetime.strptime(fechaRevision, "%Y-%m-%d").date()
 
         if fecha < date.today():
             error = "solo se permite fechas futuras"
@@ -841,7 +848,7 @@ def add_valid():
                 (usuario_id, curso_id, estado,documentoPDF ,fechaEnvio,fechaRevision)
                 VALUES (%s,%s,%s,%s,%s,%s)
             """,
-                (usuario_id, curso_id, estado, documentoPDF ,fechaEnvio,fechaRevision),
+                (usuario_id, curso_id, estado, documentoPDF, fechaEnvio, fechaRevision),
             )
             db.conexion.commit()
             cursor.close()
@@ -855,6 +862,7 @@ def add_valid():
             )
 
     return render_template("instructor/form.html", lecciones=lecciones, users=users)
+
 
 @app.route("/edit_validation/<int:id>", methods=["GET", "POST"])
 def edit_valid(id):
@@ -876,7 +884,7 @@ def edit_valid(id):
         estado = request.form["estado"]
         documentoPDF = request.form["documentoPDF"]
         fechaEnvio = request.form["fechaEnvio"]
-        fechaRevision= request.form["fechaRevision"]
+        fechaRevision = request.form["fechaRevision"]
 
         error = None
 
@@ -884,7 +892,7 @@ def edit_valid(id):
 
         if fecha > date.today():
             error = "No se permiten fechas futuras"
-            
+
         fecha = datetime.strptime(fechaRevision, "%Y-%m-%d").date()
 
         if fecha < date.today():
@@ -897,9 +905,10 @@ def edit_valid(id):
                 lecciones=lecciones,
                 users=users,
             )
-        
-        cursor.execute("""UPDATE validacion_instructores  SET usuario_id=%s,curso_id=%s,estado=%s, documentoPDF=%s, fechaEnvio=%s,  fechaRevision=%s WHERE id=%s """,
-            (usuario_id, curso_id, estado,documentoPDF ,fechaEnvio, fechaRevision,id),
+
+        cursor.execute(
+            """UPDATE validacion_instructores  SET usuario_id=%s,curso_id=%s,estado=%s, documentoPDF=%s, fechaEnvio=%s,  fechaRevision=%s WHERE id=%s """,
+            (usuario_id, curso_id, estado, documentoPDF, fechaEnvio, fechaRevision, id),
         )
 
         db.conexion.commit()
@@ -913,8 +922,12 @@ def edit_valid(id):
     cursor.close()
 
     return render_template(
-        "instructor/form.html", lecciones=lecciones, users=users, nota_lesson=nota_lesson
+        "instructor/form.html",
+        lecciones=lecciones,
+        users=users,
+        nota_lesson=nota_lesson,
     )
+
 
 @app.route("/deleteVALID/<string:id>", methods=["POST"])
 def deleteVALID(id):
@@ -947,7 +960,7 @@ def registration():
 def add_regis():
 
     cursor = db.conexion.cursor(dictionary=True)
-    
+
     cursor.execute("SELECT id, nombre FROM usuarios")
     users = cursor.fetchall()
 
@@ -955,36 +968,33 @@ def add_regis():
     cursor.execute("SELECT id, titulo FROM cursos")
     lecciones = cursor.fetchall()
 
-
     if request.method == "POST":
 
         usuario_id = request.form["usuario_id"]
         curso_id = request.form["curso_id"]
-        fecha_inscripcion= request.form["fecha_inscripcion"]
-       
+        intereses = request.form["intereses"]
+        fecha_inscripcion = request.form["fecha_inscripcion"]
+
         error = None
 
         fecha = datetime.strptime(fecha_inscripcion, "%Y-%m-%d").date()
 
         if fecha > date.today():
             error = "No se permiten fechas futuras"
-        
 
         if error:
             return render_template(
-                "registro/form.html", lecciones=lecciones, users=users, 
-                error=error
-                
+                "registro/form.html", lecciones=lecciones, users=users, error=error
             )
 
         try:
             cursor.execute(
                 """
                 INSERT INTO inscripciones
-                (usuario_id, curso_id, fecha_inscripcion)
-                VALUES (%s,%s,%s)
+                (usuario_id, curso_id, intereses, fecha_inscripcion)
+                VALUES (%s,%s,%s,%s)
             """,
-                (usuario_id, curso_id, fecha_inscripcion),
+                (usuario_id, curso_id, intereses, fecha_inscripcion),
             )
             db.conexion.commit()
             cursor.close()
@@ -994,10 +1004,14 @@ def add_regis():
         except Exception as e:
             db.conexion.rollback()
             return render_template(
-                "registro/form.html",error=str(e), lecciones=lecciones, users=users, 
+                "registro/form.html",
+                error=str(e),
+                lecciones=lecciones,
+                users=users,
             )
 
-    return render_template("registro/form.html", lecciones=lecciones, users=users )
+    return render_template("registro/form.html", lecciones=lecciones, users=users)
+
 
 @app.route("/edit_enrollments/<int:id>", methods=["GET", "POST"])
 def edit_regis(id):
@@ -1016,15 +1030,16 @@ def edit_regis(id):
 
         usuario_id = request.form["usuario_id"]
         curso_id = request.form["curso_id"]
+        intereses = request.form["intereses"]
         fecha_inscripcion = request.form["fecha_inscripcion"]
 
         error = None
 
-        fecha = datetime.strptime( fecha_inscripcion, "%Y-%m-%d").date()
+        fecha = datetime.strptime(fecha_inscripcion, "%Y-%m-%d").date()
 
         if fecha > date.today():
             error = "No se permiten fechas futuras"
-            
+
         if error:
             return render_template(
                 "registro/form.html",
@@ -1032,9 +1047,10 @@ def edit_regis(id):
                 lecciones=lecciones,
                 users=users,
             )
-        
-        cursor.execute("""UPDATE inscripciones  SET usuario_id=%s,curso_id=%s, fecha_inscripcion=%s WHERE id=%s """,
-            (usuario_id, curso_id, fecha_inscripcion,id),
+
+        cursor.execute(
+            """UPDATE inscripciones  SET usuario_id=%s,curso_id=%s, intereses=%s, fecha_inscripcion=%s WHERE id=%s """,
+            (usuario_id, curso_id, intereses, fecha_inscripcion, id),
         )
 
         db.conexion.commit()
@@ -1042,7 +1058,7 @@ def edit_regis(id):
         return redirect(url_for("registration"))
 
     # 🔹 traer dato
-    cursor.execute("SELECT * FROM inscripciones WHERE id=%s", (id,)) 
+    cursor.execute("SELECT * FROM inscripciones WHERE id=%s", (id,))
     nota_lesson = cursor.fetchone()
 
     cursor.close()
@@ -1060,8 +1076,6 @@ def deleteREGIS(id):
     cursor.execute(sql, data)
     db.conexion.commit()
     return redirect(url_for("registration"))
-
-
 
 
 # CERTIFICATES----------------------------------------------------------------------------------------------#
@@ -1085,7 +1099,7 @@ def certificates():
 def add_cert():
 
     cursor = db.conexion.cursor(dictionary=True)
-    
+
     cursor.execute("SELECT id, nombre FROM usuarios")
     users = cursor.fetchall()
 
@@ -1093,25 +1107,21 @@ def add_cert():
     cursor.execute("SELECT id, titulo FROM cursos")
     lecciones = cursor.fetchall()
 
-
     if request.method == "POST":
 
         usuario_id = request.form["usuario_id"]
         curso_id = request.form["curso_id"]
-        codigo_certificado  = request.form["codigo_certificado "]
+        codigo_certificado = request.form["codigo_certificado "]
         fecha_emision = request.form["fecha_emision"]
         urlCertificado = request.form["urlCertificado"]
-        
-
 
         error = None
 
-        fecha = datetime.strptime(fecha_emision,"%Y-%m-%d").date()
+        fecha = datetime.strptime(fecha_emision, "%Y-%m-%d").date()
 
         if fecha > date.today():
             error = "No se permiten fechas futuras"
-            
-        
+
         if error:
             return render_template(
                 "certificates/form.html",
@@ -1127,7 +1137,13 @@ def add_cert():
                 (usuario_id, curso_id, codigo_certificado ,fecha_emision ,urlCertificado )
                 VALUES (%s,%s,%s,%s,%s)
             """,
-                (usuario_id, curso_id, codigo_certificado , fecha_emision ,urlCertificado ),
+                (
+                    usuario_id,
+                    curso_id,
+                    codigo_certificado,
+                    fecha_emision,
+                    urlCertificado,
+                ),
             )
             db.conexion.commit()
             cursor.close()
@@ -1141,6 +1157,7 @@ def add_cert():
             )
 
     return render_template("certificates/form.html", lecciones=lecciones, users=users)
+
 
 @app.route("/edit_cert/<int:id>", methods=["GET", "POST"])
 def edit_cert(id):
@@ -1160,9 +1177,8 @@ def edit_cert(id):
         usuario_id = request.form["usuario_id"]
         curso_id = request.form["curso_id"]
         fecha_emision = request.form["fecha_emision"]
-        codigo_certificado  = request.form["codigo_certificado "]
+        codigo_certificado = request.form["codigo_certificado "]
         urlCertificado = request.form["urlCertificado"]
-        
 
         error = None
 
@@ -1170,8 +1186,6 @@ def edit_cert(id):
 
         if fecha > date.today():
             error = "No se permiten fechas futuras"
-            
-        
 
         if error:
             return render_template(
@@ -1180,9 +1194,17 @@ def edit_cert(id):
                 lecciones=lecciones,
                 users=users,
             )
-        
-        cursor.execute("""UPDATE certificados  SET usuario_id=%s,curso_id=%s,codigo_certificado=%s, fecha_emision=%s, urlCertificado=%s WHERE id=%s """,
-            (usuario_id, curso_id, codigo_certificado ,fecha_emision ,urlCertificado,id),
+
+        cursor.execute(
+            """UPDATE certificados  SET usuario_id=%s,curso_id=%s,codigo_certificado=%s, fecha_emision=%s, urlCertificado=%s WHERE id=%s """,
+            (
+                usuario_id,
+                curso_id,
+                codigo_certificado,
+                fecha_emision,
+                urlCertificado,
+                id,
+            ),
         )
 
         db.conexion.commit()
@@ -1196,7 +1218,10 @@ def edit_cert(id):
     cursor.close()
 
     return render_template(
-        "certificates/form.html", lecciones=lecciones, users=users, nota_lesson=nota_lesson
+        "certificates/form.html",
+        lecciones=lecciones,
+        users=users,
+        nota_lesson=nota_lesson,
     )
 
 
@@ -1212,5 +1237,177 @@ def deleteCERT(id):
 
 # ----------------------------------------------------------------------------------------------------------#
 
+
+# ----------------------------------------------------------------------------------------------------------#
+@app.route("/enroll_course/<int:curso_id>", methods=["POST"])
+def enroll_course(curso_id):
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    usuario_id = session["user_id"]
+
+    cursor = db.conexion.cursor(dictionary=True)
+
+    # =====================================
+    # VALIDAR SI YA ESTÁ INSCRITO
+    # =====================================
+    cursor.execute(
+        """
+        SELECT * FROM inscripciones
+        WHERE usuario_id=%s
+        AND curso_id=%s
+        """,
+        (usuario_id, curso_id),
+    )
+
+    existe = cursor.fetchone()
+
+    if existe:
+
+        cursor.close()
+
+        return redirect(url_for("menuUser"))
+
+    # =====================================
+    # INSERTAR INSCRIPCIÓN
+    # =====================================
+    cursor.execute(
+        """
+        INSERT INTO inscripciones
+        (usuario_id, curso_id, fecha_inscripcion)
+
+        VALUES (%s,%s,CURDATE())
+        """,
+        (usuario_id, curso_id),
+    )
+
+    # =====================================
+    # CREAR PROGRESO AUTOMÁTICO
+    # =====================================
+    cursor.execute(
+        """
+        INSERT INTO progreso_curso
+        (
+            usuario_id,
+            curso_id,
+            progreso,
+            nota_final,
+            estado,
+            fecha_actualizacion
+        )
+
+        VALUES (%s,%s,%s,%s,%s,CURDATE())
+        """,
+        (
+            usuario_id,
+            curso_id,
+            0,
+            0,
+            "PENDIENTE",
+        ),
+    )
+
+    # =====================================
+    # TRAER LECCIONES DEL CURSO
+    # =====================================
+    cursor.execute(
+        """
+        SELECT id
+        FROM lecciones
+        WHERE curso_id=%s
+        """,
+        (curso_id,),
+    )
+
+    lecciones = cursor.fetchall()
+
+    # =====================================
+    # CREAR NOTAS AUTOMÁTICAS
+    # =====================================
+    for lesson in lecciones:
+
+        cursor.execute(
+            """
+            INSERT INTO nota_leccion
+            (
+                lecciones_id,
+                usuarios_id,
+                notas,
+                estado,
+                fecha_registro
+            )
+
+            VALUES (%s,%s,%s,%s,CURDATE())
+            """,
+            (
+                lesson["id"],
+                usuario_id,
+                0,
+                "PENDIENTE",
+            ),
+        )
+
+    db.conexion.commit()
+
+    cursor.close()
+
+    return redirect(url_for("menuUser"))
+
+
+# ----------------------------------------------------------------------------------------------------------#
+
+
+
+# ----------------------------------------------------------------------------------------------------------#
+@app.route("/regis/<int:curso_id>", methods=["POST"])
+def regis(curso_id):
+
+    # 🔥 usuario logueado
+    usuario_id = session["user_id"]
+
+    # 🔥 fecha automática
+    fecha_inscripcion = date.today()
+
+    cursor = db.conexion.cursor()
+
+    # 🔥 verificar si ya está inscrito
+    cursor.execute(
+        """
+        SELECT * FROM inscripciones
+        WHERE usuario_id=%s
+        AND curso_id=%s
+        """,
+        (usuario_id, curso_id),
+    )
+
+    existe = cursor.fetchone()
+
+    if existe:
+
+        cursor.close()
+
+        return redirect(url_for("menuUser"))
+
+    # 🔥 insertar inscripción automática
+    cursor.execute(
+        """
+        INSERT INTO inscripciones
+        (usuario_id, curso_id, fecha_inscripcion)
+
+        VALUES (%s,%s,%s)
+        """,
+        (usuario_id, curso_id, fecha_inscripcion),
+    )
+
+    db.conexion.commit()
+
+    cursor.close()
+
+    return redirect(url_for("menuUser"))
+
+
+
+# ----------------------------------------------------------------------------------------------------------#
 if __name__ == "__main__":
     app.run(debug=True)

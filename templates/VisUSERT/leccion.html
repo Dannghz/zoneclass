@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ leccion.titulo }} - Zoneclass</title>
+
+    <!-- BOOTSTRAP 5 & ICONS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <style>
+        /* ==========================================================================
+           1. ESTILOS GENERALES Y PALETA PASTEL
+           ========================================================================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f4f0ff;
+            color: #2d3748;
+            min-height: 100vh;
+            padding-bottom: 60px;
+        }
+
+        /* ==========================================================================
+           2. NAVBAR MODERNO
+           ========================================================================== */
+        nav.navbar-custom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 5%;
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(124, 92, 219, 0.08);
+            border-bottom: 1px solid #ede9fe;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            margin-bottom: 35px;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #8b5cf6, #7c5cdb);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-weight: 800;
+            font-size: 1.3rem;
+            box-shadow: 0 4px 12px rgba(124, 92, 219, 0.3);
+        }
+
+        .logo-text {
+            font-size: 1.25rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            color: #3b0764;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            list-style: none;
+            gap: 12px;
+            margin: 0;
+        }
+
+        .nav-link-btn {
+            text-decoration: none;
+            color: #5b21b6;
+            font-weight: 600;
+            font-size: 0.92rem;
+            padding: 8px 16px;
+            border-radius: 10px;
+            background-color: #f3e8ff;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nav-link-btn:hover {
+            background-color: #7c5cdb;
+            color: #ffffff;
+            transform: translateY(-2px);
+        }
+
+        /* ==========================================================================
+           3. CONTENEDOR PRINCIPAL Y ENCABEZADO
+           ========================================================================== */
+        .lesson-container {
+            max-width: 1150px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .top-bar-action {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 25px;
+        }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            color: #6b21a8;
+            font-weight: 700;
+            font-size: 0.95rem;
+            background-color: #ffffff;
+            padding: 10px 18px;
+            border-radius: 14px;
+            border: 1px solid #e9d5ff;
+            box-shadow: 0 4px 12px rgba(124, 92, 219, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .btn-back:hover {
+            background-color: #7c5cdb;
+            color: #ffffff;
+            border-color: #7c5cdb;
+            transform: translateX(-3px);
+        }
+
+        /* GRID PRINCIPAL */
+        .lesson-grid {
+            display: grid;
+            grid-template-columns: 1fr 360px;
+            gap: 28px;
+            align-items: start;
+        }
+
+        /* ==========================================================================
+           4. TARJETA DE CONTENIDO DE LA LECCIÓN (IZQUIERDA)
+           ========================================================================== */
+        .lesson-card {
+            background: #ffffff;
+            border-radius: 24px;
+            border: 1px solid #e9d5ff;
+            padding: 35px;
+            box-shadow: 0 8px 24px rgba(124, 92, 219, 0.06);
+        }
+
+        .lesson-badge {
+            display: inline-block;
+            background-color: #f3e8ff;
+            color: #7c5cdb;
+            font-size: 0.8rem;
+            font-weight: 800;
+            padding: 6px 14px;
+            border-radius: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+        }
+
+        .lesson-title {
+            font-size: 2.1rem;
+            font-weight: 800;
+            color: #2e1065;
+            margin-bottom: 25px;
+            line-height: 1.25;
+        }
+
+        .lesson-content {
+            font-size: 1.05rem;
+            color: #4b5563;
+            line-height: 1.8;
+            white-space: pre-line; /* Mantiene saltos de línea del texto */
+        }
+
+        /* ==========================================================================
+           5. PANEL DE ARCHIVOS PDF (DERECHA)
+           ========================================================================== */
+        .sidebar-card {
+            background: #ffffff;
+            border-radius: 24px;
+            border: 1px solid #e9d5ff;
+            padding: 26px;
+            box-shadow: 0 8px 24px rgba(124, 92, 219, 0.06);
+            position: sticky;
+            top: 100px;
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #faf5ff;
+        }
+
+        .sidebar-header i {
+            font-size: 1.4rem;
+            color: #8b5cf6;
+        }
+
+        .sidebar-title {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: #1e1b4b;
+            margin: 0;
+        }
+
+        .pdf-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .pdf-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #faf5ff;
+            border: 1px solid #f3e8ff;
+            padding: 14px 16px;
+            border-radius: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .pdf-item:hover {
+            border-color: #c084fc;
+            background-color: #f3e8ff;
+            transform: translateY(-2px);
+        }
+
+        .pdf-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            overflow: hidden;
+        }
+
+        .pdf-order-badge {
+            width: 26px;
+            height: 26px;
+            background-color: #e9d5ff;
+            color: #5b21b6;
+            font-size: 0.75rem;
+            font-weight: 800;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .pdf-details {
+            overflow: hidden;
+        }
+
+        .pdf-name {
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: #1e1b4b;
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .pdf-date {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin: 0;
+        }
+
+        .btn-download-pdf {
+            width: 36px;
+            height: 36px;
+            background-color: #ffffff;
+            color: #7c5cdb;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .btn-download-pdf:hover {
+            background-color: #7c5cdb;
+            color: #ffffff;
+        }
+
+        .empty-pdfs {
+            text-align: center;
+            padding: 25px 15px;
+            color: #9ca3af;
+            font-size: 0.9rem;
+            background-color: #faf5ff;
+            border-radius: 16px;
+            border: 1px dashed #e9d5ff;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 900px) {
+            .lesson-grid {
+                grid-template-columns: 1fr;
+            }
+            .sidebar-card {
+                position: static;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar-custom">
+        <a href="/menuUser" class="logo-container">
+            <div class="logo-icon">Z</div>
+            <span class="logo-text">ZONECLASS</span>
+        </a>
+
+        <ul class="nav-links">
+            <li>
+                <a href="/miscursos" class="nav-link-btn">
+                    <i class="bi bi-journal-bookmark-fill"></i>
+                    Mis Cursos
+                </a>
+            </li>
+            <li>
+                <a href="/profile" class="nav-link-btn">
+                    <i class="bi bi-person-circle"></i>
+                    Perfil
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- CONTENIDO DE LA LECCIÓN -->
+    <main class="lesson-container">
+
+        <!-- BARRA SUPERIOR DE ACCIÓN -->
+        <div class="top-bar-action">
+            <a href="/view_course/{{ leccion.curso_id }}" class="btn-back">
+                <i class="bi bi-arrow-left"></i>
+                Volver al curso
+            </a>
+        </div>
+
+        <div class="lesson-grid">
+
+            <!-- COLUMNA IZQUIERDA: TITULO Y CONTENIDO DE LA LECCIÓN -->
+            <article class="lesson-card">
+                <span class="lesson-badge">Lección del Curso</span>
+                <h1 class="lesson-title">{{ leccion.titulo }}</h1>
+                
+                <div class="lesson-content">
+                    {{ leccion.contenido }}
+                </div>
+            </article>
+
+            <!-- COLUMNA DERECHA: RECURSOS PDF ADJUNTOS -->
+            <aside class="sidebar-card">
+                <div class="sidebar-header">
+                    <i class="bi bi-file-earmark-pdf-fill"></i>
+                    <h2 class="sidebar-title">Material PDF</h2>
+                </div>
+
+                <div class="pdf-list">
+                    {% for pdf in archivos_pdf %}
+                    <div class="pdf-item">
+                        <div class="pdf-info">
+                            <span class="pdf-order-badge">#{{ pdf.orden }}</span>
+                            <div class="pdf-details">
+                                <h3 class="pdf-name" title="{{ pdf.nombre }}">{{ pdf.nombre }}</h3>
+                                <p class="pdf-date">
+                                    <i class="bi bi-clock"></i> {{ pdf.fechaSubida }}
+                                </p>
+                            </div>
+                        </div>
+
+                        <a href="{{ pdf.ruta }}" target="_blank" class="btn-download-pdf" title="Descargar/Ver PDF">
+                            <i class="bi bi-download"></i>
+                        </a>
+                    </div>
+                    {% else %}
+                    <div class="empty-pdfs">
+                        <i class="bi bi-folder2-open fs-3 d-block mb-1 text-purple"></i>
+                        No hay archivos PDF adjuntos a esta lección.
+                    </div>
+                    {% endfor %}
+                </div>
+            </aside>
+
+        </div>
+
+    </main>
+
+</body>
+</html>

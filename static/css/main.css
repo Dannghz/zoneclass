@@ -21,221 +21,407 @@
 }
 
 .mi_body {
-  background-image:url("/static/img/file.svg");
+  background-image: url("/static/img/file.svg");
   background-repeat: repeat;
   overflow: hidden;
 }
 
 .sidebar {
-    background: #212529; /* negro tipo Bootstrap */
-    height: 100vh;
-    padding-top: 50px;
-    position: fixed;
-    width: 300px !important; /* ancho fijo */
-    color: white;
+  background: #212529; /* negro tipo Bootstrap */
+  height: 100vh;
+  padding-top: 50px;
+  position: fixed;
+  width: 300px !important; /* ancho fijo */
+  color: white;
 }
 
 /* Título siempre visible */
 .sidebar h4 {
-    padding-left: 35px;
-    margin-bottom: 20px
+  padding-left: 35px;
+  margin-bottom: 20px;
 }
 
 /* Links */
 .sidebar a {
-    color: white;
-    text-decoration: none;
-    padding: 22px 20px;
-    display: flex;
-    align-items: center;
-    font-size: 1.25rem;
-    gap: 12px;
-    transition: background 0.2s;
+  color: white;
+  text-decoration: none;
+  padding: 22px 20px;
+  display: flex;
+  align-items: center;
+  font-size: 1.25rem;
+  gap: 12px;
+  transition: background 0.2s;
 }
 
 /* Hover */
 .sidebar a:hover {
-    background: #343a40; /* gris oscuro */
+  background: #343a40; /* gris oscuro */
 }
 
 /* Texto visible siempre */
 .sidebar strong {
-    opacity: 1;
+  opacity: 1;
 }
 
 /* Contenido se mueve para no quedar debajo */
 .content {
-    margin-left: 350px; /* espacio del sidebar */
-    padding: 25px;
+  margin-left: 350px; /* espacio del sidebar */
+  padding: 25px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Contenedor principal que divide la pantalla */
+.split-container {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* =========================================
+           LADO IZQUIERDO: LOGIN (MODERNO Y LLAMATIVO)
+           ========================================= */
+.left-side {
+  flex: 1; /* Toma la mitad de la pantalla */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #121216; /* Fondo oscuro */
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Tarjeta de login */
+.login-box {
+  width: 100%;
+  max-width: 400px;
+  background: rgba(30, 30, 40, 0.8);
+  padding: 3rem 2.5rem;
+  border-radius: 20px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  z-index: 2;
+}
+
+/* Título con gradiente llamativo */
+.login-box h2 {
+  margin-bottom: 2rem;
+  font-size: 2.2rem;
+  text-align: center;
+  background: linear-gradient(45deg, #00dbde, #fc00ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.input-group {
+  margin-bottom: 1.5rem;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #b3b3b3;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 10px;
+  background: #2a2a35;
+  color: #ffffff;
+  font-size: 1rem;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+/* Efecto de brillo al hacer clic en el input */
+.input-group input:focus {
+  box-shadow: 0 0 12px rgba(252, 0, 255, 0.4);
+  background: #323240;
+}
+
+/* Botón de Enviar (Submit) */
+.btn-submit {
+  width: 100%;
+  padding: 14px;
+  margin-top: 1rem;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(45deg, #00dbde, #fc00ff);
+  color: white;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(252, 0, 255, 0.3);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.btn-submit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(252, 0, 255, 0.5);
+}
+
+/* Botón Extra (Ajustable) */
+.btn-extra {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  margin-top: 1rem;
+
+  border-radius: 10px;
+  background: linear-gradient(45deg, #987cfd, #6f00ff);
+  color: #dcdddd;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  text-decoration: none;
+  font-size: 1.1rem;
 }
 
 
-* {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
 
-        /* Contenedor principal que divide la pantalla */
-        .split-container {
-            display: flex;
-            min-height: 100vh;
-            width: 100%;
-        }
+.btn-extra:hover {
+  box-shadow: 0 6px 20px rgba(252, 0, 255, 0.5);
+  transform: translateY(-2px);
+}
 
-        /* =========================================
-           LADO IZQUIERDO: LOGIN (MODERNO Y LLAMATIVO)
+.btn-extraa {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  margin-top: 1rem;
+
+  border-radius: 10px;
+  background: linear-gradient(45deg, #3b90ff, #1900ff);
+  color: #dcdddd;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  text-decoration: none;
+  font-size: 1.1rem;
+}
+
+.btn-extraa:hover {
+  box-shadow: 0 6px 20px rgba(20, 36, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+/* =========================================
+           LADO DERECHO: INFORMACIÓN
            ========================================= */
-        .left-side {
-            flex: 1; /* Toma la mitad de la pantalla */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: #121216; /* Fondo oscuro */
-            padding: 2rem;
-            position: relative;
-            overflow: hidden;
+.right-side {
+  flex: 1; /* Toma la otra mitad de la pantalla */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: #f4f7f6; /* Fondo claro para contrastar */
+  padding: 3rem;
+  color: #333;
+  text-align: center;
+}
+
+.info-content {
+  max-width: 500px;
+}
+
+.info-content h1 {
+  font-size: 2.5rem;
+  color: #1a1a24;
+  margin-bottom: 1rem;
+}
+
+.info-content p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: #666;
+}
+
+/* =========================================
+           RESPONSIVE: AJUSTE PARA PANTALLAS PEQUEÑAS
+           ========================================= */
+@media (max-width: 768px) {
+  .split-container {
+    flex-direction: column; /* Apila los lados verticalmente */
+  }
+  .left-side,
+  .right-side {
+    min-height: 50vh; /* Cada lado toma la mitad del alto en móviles */
+    padding: 2rem 1rem;
+  }
+}
+
+.card-course {
+  transition: 0.3s;
+}
+
+.card-course:hover {
+  transform: translateY(-5px);
+}
+
+.card-course .card-title {
+  color: #0d6efd;
+  font-weight: bold;
+}
+
+.card-course .card-text {
+  color: #555;
+}
+
+body{
+            background: #f4f7fb;
+            font-family: 'Segoe UI', sans-serif;
         }
 
-        /* Tarjeta de login */
-        .login-box {
-            width: 100%;
-            max-width: 400px;
-            background: rgba(30, 30, 40, 0.8);
-            padding: 3rem 2.5rem;
-            border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            z-index: 2;
+        /* NAVBAR */
+
+        .navbar{
+            background: #0f172a !important;
+            padding: 15px 0;
         }
 
-        /* Título con gradiente llamativo */
-        .login-box h2 {
-            margin-bottom: 2rem;
-            font-size: 2.2rem;
-            text-align: center;
-            background: linear-gradient(45deg, #00dbde, #fc00ff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        .navbar-brand{
+            font-size: 28px;
+            font-weight: bold;
+            color: white !important;
         }
 
-        .input-group {
-            margin-bottom: 1.5rem;
+        .nav-link{
+            color: white !important;
+            font-weight: 500;
+            transition: 0.3s;
         }
 
-        .input-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: #b3b3b3;
-            font-size: 0.9rem;
+        .nav-link:hover{
+            color: #38bdf8 !important;
+        }
+
+        /* MENU HAMBURGUESA */
+
+        .menu-icon{
+            font-size: 28px;
+            color: white;
+        }
+
+        .dropdown-menu{
+            border: none;
+            border-radius: 18px;
+            padding: 15px;
+            box-shadow: 0px 10px 30px rgba(0,0,0,0.1);
+            min-width: 250px;
+        }
+
+        .dropdown-item{
+            padding: 12px;
+            border-radius: 12px;
+            transition: 0.3s;
             font-weight: 500;
         }
 
-        .input-group input {
-            width: 100%;
-            padding: 14px;
-            border: none;
-            border-radius: 10px;
-            background: #2a2a35;
-            color: #ffffff;
-            font-size: 1rem;
-            outline: none;
-            transition: all 0.3s ease;
+        .dropdown-item:hover{
+            background: #f1f5f9;
+            transform: translateX(5px);
         }
 
-        /* Efecto de brillo al hacer clic en el input */
-        .input-group input:focus {
-            box-shadow: 0 0 12px rgba(252, 0, 255, 0.4);
-            background: #323240;
-        }
+        /* HEADER */
 
-        /* Botón de Enviar (Submit) */
-        .btn-submit {
-            width: 100%;
-            padding: 14px;
-            margin-top: 1rem;
-            border: none;
-            border-radius: 10px;
-            background: linear-gradient(45deg, #00dbde, #fc00ff);
+        .hero{
+            background: linear-gradient(135deg,#2563eb,#38bdf8);
+            padding: 80px 0;
             color: white;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(252, 0, 255, 0.3);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .btn-submit:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(252, 0, 255, 0.5);
-        }
-
-        /* Botón Extra (Ajustable) */
-        .btn-extra {
-          display: block;
-            width: 100%;
-            padding: 14px;
-            margin-top: 1rem;
-
-            border-radius: 10px;
-            background: linear-gradient(45deg, #987cfd, #6f00ff);
-            color: #dcdddd;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.2s ease;
             text-align: center;
+        }
+
+        .hero h1{
+            font-size: 55px;
+            font-weight: bold;
+        }
+
+        .hero p{
+            font-size: 20px;
+            opacity: 0.9;
+        }
+
+        /* CARD CURSOS */
+
+        .course-card{
+            background: rgb(248, 248, 248);
+            border-radius: 25px;
+            overflow: hidden;
+            transition: 0.4s;
+            cursor: pointer;
+            position: relative;
+            border: 1px solid #000000;
+        }
+
+        .course-card:hover{
+            transform: translateY(-10px);
+        }
+
+        .course-body{
+            padding: 30px;
+        }
+
+        .course-title{
+            font-size: 28px;
+            font-weight: bold;
+            color: #0f172a;
+            margin-bottom: 15px;
+        }
+
+        .course-description{
+            color: #64748b;
+            font-size: 16px;
+            line-height: 1.7;
+        }
+
+        /* VER MÁS */
+
+        .read-more{
+            color: #2563eb;
+            font-weight: bold;
             text-decoration: none;
-            font-size: 1.1rem;
+            display: none;
         }
 
-        .btn-extra:hover {
-            box-shadow: 0 6px 20px rgba(252, 0, 255, 0.5);
-            transform: translateY(-2px);
+        /* SOLO SI EL TEXTO ES MUY LARGO */
+        .long-text .read-more{
+            display: inline-block;
         }
 
-        /* =========================================
-           LADO DERECHO: INFORMACIÓN
-           ========================================= */
-        .right-side {
-            flex: 1; /* Toma la otra mitad de la pantalla */
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            background: #f4f7f6; /* Fondo claro para contrastar */
-            padding: 3rem;
-            color: #333;
-            text-align: center;
+        .course-footer{
+            padding: 20px 30px;
+            border-top: 1px solid #e2e8f0;
+            background: #f8fafc;
         }
 
-        .info-content {
-            max-width: 500px;
+        .btn-course{
+            width: 100%;
+            border-radius: 15px;
+            padding: 12px;
+            font-weight: bold;
+            background: linear-gradient(135deg,#2563eb,#38bdf8);
+            border: none;
+            transition: 0.3s;
         }
 
-        .info-content h1 {
-            font-size: 2.5rem;
-            color: #1a1a24;
-            margin-bottom: 1rem;
+        .btn-course:hover{
+            transform: scale(1.02);
         }
 
-        .info-content p {
-            font-size: 1.1rem;
-            line-height: 1.6;
-            color: #666;
-        }
-
-        /* =========================================
-           RESPONSIVE: AJUSTE PARA PANTALLAS PEQUEÑAS
-           ========================================= */
-        @media (max-width: 768px) {
-            .split-container {
-                flex-direction: column; /* Apila los lados verticalmente */
-            }
-            .left-side, .right-side {
-                min-height: 50vh; /* Cada lado toma la mitad del alto en móviles */
-                padding: 2rem 1rem;
-            }
-        }

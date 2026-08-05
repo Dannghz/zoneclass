@@ -37,6 +37,11 @@
           </div>
 
           <div class="mb-3">
+            <label>Edad:</label>
+            <input type="number" class="form-control" name="edad" value="{{ user.edad if user else '' }}" />
+          </div>
+          
+          <div class="mb-3">
             <label>Email:</label>
             <input type="email" class="form-control" name="email" value="{{ user.email if user else '' }}" />
           </div>

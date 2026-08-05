@@ -50,6 +50,11 @@
         </div>
 
         <div class="mb-3">
+          <label>Vista Previa del Contenido</label>
+          <textarea class="form-control" name="vistaPreviaCon" required> {{ lesson.vistaPreviaCon if lesson else '' }}</textarea>
+        </div>
+
+        <div class="mb-3">
           <label>Contenido</label>
           <textarea class="form-control" name="contenido" required> {{ lesson.contenido if lesson else '' }}</textarea>
         </div>

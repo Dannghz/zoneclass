@@ -19,7 +19,7 @@
       <i class="bi bi-gear-wide"></i> ZONECLASS <br> ADMIN
     </h4>
 
-    <a href="/">
+    <a href="/admin">
       <i class="bi bi-house"></i> <strong>Back to menu</strong>
     </a>
 
@@ -34,15 +34,6 @@
     <a href="/lessons">
       <i class="bi bi-journals"></i> <strong>Lessons</strong>
     </a>
-
-    <a href="/lesson_notes">
-      <i class="bi bi-journal-bookmark-fill"></i> <strong>Lessons notes</strong>
-    </a>
-
-    <a href="/course_progress">
-      <i class="bi bi-book-half"></i> <strong>Course progress</strong>
-    </a>
-
 
     <a href="/instructor_validation">
       <i class="bi bi-clipboard-check"></i><strong>Instructor validation</strong>
@@ -74,6 +65,7 @@
           <th>ID</th>
           <th>User ID</th>
           <th>Course ID</th>
+          <th>Academy Interests</th>
           <th>Registration Date</th>
           <th>Actions</th>
         </tr>
@@ -84,6 +76,7 @@
           <td>{{dataCol.id}}</td>
           <td>{{dataCol.usuario_id}}</td>
           <td>{{dataCol.curso_id}}</td>
+          <td>{{dataCol.intereses}}</td>
           <td>{{dataCol.fecha_inscripcion}}</td>
           <td>
             <a href="{{ url_for('edit_regis', id=dataCol.id) }}" class="btn btn-warning">

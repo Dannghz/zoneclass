@@ -496,6 +496,52 @@
         </div>
     </section>
 
+    <section class="courses-section">
+
+        <div class="section-header-custom">
+            <h2 class="section-title-custom">Mis Cursos creados</h2>
+            <div class="section-line-custom"></div>
+        </div>
+
+        <div class="courses-grid-custom">
+            {% for curso in cursos %}
+            <a href="/view_course/{{ curso.id }}" class="course-card-link">
+                <div class="course-card-custom">
+                    
+                    <div class="course-card-body">
+                        <span class="course-badge">Disponible</span>
+                        
+                        <h3 class="course-title-custom">
+                            {{ profe.titulo }}
+                        </h3>
+
+                        <p class="course-desc-custom">
+                            {% if profe.descripcion|length > 140 %}
+                                {{ profe.descripcion[:140] }}...
+                            {% else %}
+                                {{ profe.descripcion }}
+                            {% endif %}
+                        </p>
+                    </div>
+
+                    <div class="course-card-footer">
+                        <div class="metric-pill">
+                            <i class="bi bi-journal-text"></i>
+                            <span>{{ profe.total_lecciones }} Lecciones</span>
+                        </div>
+
+                        <div class="metric-pill">
+                            <i class="bi bi-people-fill"></i>
+                            <span>{{ profe.total_estudiantes }} Alumnos</span>
+                        </div>
+                    </div>
+
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+
+    </section>
     <!-- ==========================================================================
        4. SECCIÓN DE CURSOS DISPONIBLES
        ========================================================================== -->
