@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ curso.titulo }} - Zoneclass Cursos</title>
+
+    <!-- BOOTSTRAP 5 & ICONS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <style>
+        /* ==========================================================================
+           1. ESTILOS GENERALES Y PALETA DE COLORES PASTEL
+           ========================================================================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #f4f0ff; /* Fondo lavanda pastel suave */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #2d3748;
+            min-height: 100vh;
+        }
+
+        /* ==========================================================================
+           2. NAVBAR MODERNO
+           ========================================================================== */
+        nav.navbar-custom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 5%;
+            background-color: #ffffff;
+            box-shadow: 0 4px 20px rgba(124, 92, 219, 0.08);
+            border-bottom: 1px solid #ede9fe;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #8b5cf6, #7c5cdb);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-weight: 800;
+            font-size: 1.3rem;
+            box-shadow: 0 4px 12px rgba(124, 92, 219, 0.3);
+        }
+
+        .logo-text {
+            font-size: 1.25rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            color: #3b0764;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            list-style: none;
+            gap: 20px;
+            margin: 0;
+        }
+
+        .nav-link-btn {
+            text-decoration: none;
+            color: #5b21b6;
+            font-weight: 600;
+            font-size: 0.95rem;
+            padding: 8px 16px;
+            border-radius: 10px;
+            background-color: #f3e8ff;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nav-link-btn:hover {
+            background-color: #7c5cdb;
+            color: #ffffff;
+            transform: translateY(-2px);
+        }
+
+        /* ==========================================================================
+           3. HERO (TÍTULO Y DESCRIPCIÓN DEL CURSO)
+           ========================================================================== */
+        .hero-banner {
+            padding: 50px 20px 30px;
+            text-align: center;
+            max-width: 950px;
+            margin: 0 auto;
+        }
+
+        .hero-title {
+            font-size: 2.8rem;
+            font-weight: 800;
+            color: #2e1065;
+            margin-bottom: 16px;
+            line-height: 1.2;
+        }
+
+        .hero-description {
+            font-size: 1.1rem;
+            color: #6b7280;
+            line-height: 1.7;
+        }
+
+        /* ==========================================================================
+           4. TARJETA DE INFORMACIÓN DEL CURSO (COLUMNA IZQUIERDA)
+           ========================================================================== */
+        .info-card {
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(124, 92, 219, 0.08);
+            border: 2px solid #ede9fe;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: sticky;
+            top: 20px;
+        }
+
+        .profesor-avatar-container {
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            background-color: #e0e7ff;
+            border: 4px solid #f3e8ff;
+            box-shadow: 0 8px 16px rgba(124, 92, 219, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 18px;
+            overflow: hidden;
+        }
+
+        .profesor-avatar-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profesor-avatar-svg {
+            width: 60px;
+            height: 60px;
+            fill: #818cf8;
+        }
+
+        .profesor-title {
+            font-size: 0.8rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #7c5cdb;
+            margin-bottom: 4px;
+        }
+
+        .profesor-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #1e1b4b;
+            margin-bottom: 20px;
+        }
+
+        .info-details {
+            width: 100%;
+            border-top: 1px dashed #e9d5ff;
+            padding-top: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .info-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-align: left;
+            background-color: #faf5ff;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px solid #f3e8ff;
+        }
+
+        .info-row i {
+            font-size: 1.3rem;
+            color: #7c5cdb;
+        }
+
+        .info-row-text label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #6b21a8;
+            margin: 0;
+        }
+
+        .info-row-text span {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #1e1b4b;
+        }
+
+        /* BOTÓN REGISTRARSE */
+        .btn-register {
+            width: 100%;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #7c5cdb, #9333ea);
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            box-shadow: 0 6px 18px rgba(124, 92, 219, 0.3);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+
+        .btn-register:hover {
+            color: #ffffff;
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 10px 25px rgba(124, 92, 219, 0.45);
+        }
+
+        /* BOTÓN EDITAR CURSO (NUEVO ESTILO RECTIFICADO) */
+        .btn-edit {
+            width: 100%;
+            margin-top: 12px;
+            padding: 12px 20px;
+            border: 2px solid #7c5cdb;
+            border-radius: 14px;
+            background-color: #f3e8ff;
+            color: #5b21b6;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+
+        .btn-edit:hover {
+            background-color: #7c5cdb;
+            color: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(124, 92, 219, 0.25);
+        }
+
+        /* ==========================================================================
+           5. TARJETAS DE LECCIONES (COLUMNA DERECHA)
+           ========================================================================== */
+        .section-title {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #2e1065;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .lesson-card {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 24px;
+            border: 1px solid #e9d5ff;
+            box-shadow: 0 6px 20px rgba(124, 92, 219, 0.05);
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .lesson-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 28px rgba(124, 92, 219, 0.12);
+            border-color: #c084fc;
+        }
+
+        .lesson-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .lesson-badge {
+            background-color: #f3e8ff;
+            color: #7c5cdb;
+            font-size: 0.8rem;
+            font-weight: 800;
+            padding: 5px 12px;
+            border-radius: 20px;
+            text-transform: uppercase;
+        }
+
+        .lesson-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1e1b4b;
+            margin-bottom: 12px;
+        }
+
+        .lesson-preview-box {
+            background-color: #faf5ff;
+            border-left: 4px solid #8b5cf6;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .lesson-preview-label {
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: #6b21a8;
+            margin-bottom: 4px;
+        }
+
+        .lesson-preview-content {
+            font-size: 0.95rem;
+            color: #4b5563;
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        .lesson-footer {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .btn-go-lesson {
+            text-decoration: none;
+            background: linear-gradient(135deg, #8b5cf6, #7c5cdb);
+            color: #ffffff;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 4px 12px rgba(124, 92, 219, 0.2);
+        }
+
+        .btn-go-lesson:hover {
+            color: #ffffff;
+            transform: translateX(4px);
+            box-shadow: 0 6px 16px rgba(124, 92, 219, 0.35);
+        }
+
+        .custom-alert {
+            background-color: #ffffff;
+            border: 2px dashed #cbd5e1;
+            color: #64748b;
+            border-radius: 18px;
+            padding: 30px;
+            text-align: center;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar-custom">
+        <a href="/menuInstru" class="logo-container">
+            <div class="logo-icon">Z</div>
+            <span class="logo-text">ZONECLASS CURSOS</span>
+        </a>
+
+        <ul class="nav-links">
+            <li>
+                <a href="/menuInstru" class="nav-link-btn">
+                    <i class="bi bi-house-door-fill"></i>
+                    Inicio / Menú
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- HERO: TÍTULO Y DESCRIPCIÓN DEL CURSO -->
+    <section class="hero-banner">
+        <h1 class="hero-title">{{ curso.titulo }}</h1>
+        <p class="hero-description">{{ curso.descripcion }}</p>
+    </section>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <div class="container pb-5">
+        <div class="row g-4">
+
+            <!-- COLUMNA IZQUIERDA: RECUADRO DE INFORMACIÓN Y REGISTRO -->
+            <div class="col-lg-4">
+                <div class="info-card">
+
+                    <!-- FOTO O AVATAR DEL PROFESOR -->
+                    <div class="profesor-avatar-container">
+                        {% if curso.profesor_foto %}
+                            <img src="{{ curso.profesor_foto }}" alt="Profesor(a) {{ curso.profesor_nombre }}">
+                        {% else %}
+                            <svg class="profesor-avatar-svg" viewBox="0 0 24 24">
+                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                            </svg>
+                        {% endif %}
+                    </div>
+
+                    <div class="profesor-title">Profesor(a)</div>
+                    <div class="profesor-name">{{ curso.profesor_nombre }}</div>
+
+                    <!-- DETALLES ADICIONALES -->
+                    <div class="info-details">
+                        <div class="info-row">
+                            <i class="bi bi-journal-bookmark-fill"></i>
+                            <div class="info-row-text">
+                                <label>Lecciones</label>
+                                <span>{{ lecciones|length }} Disponibles</span>
+                            </div>
+                        </div>
+
+                        <div class="info-row">
+                            <i class="bi bi-calendar-check-fill"></i>
+                            <div class="info-row-text">
+                                <label>Fecha de Creación</label>
+                                <span>{{ curso.fecha_creacion }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- BOTÓN DE REGISTRO AL CURSO -->
+                    <form action="/regis/{{ curso.id }}" method="POST" style="width: 100%;">
+                        <button type="submit" class="btn-register">
+                            <i class="bi bi-bookmark-check-fill me-2"></i>
+                            Registrarse al Curso
+                        </button>
+                    </form>
+
+                    <!-- BOTÓN EDITAR CURSO (VERIFICA SI PUEDE EDITAR O SI ES PROFESOR/ADMIN) -->
+                    {% if puede_editar %}
+                        <a href="/editcourse/{{ curso.id }}" class="btn-edit">
+                            <i class="bi bi-pencil-square me-2"></i>
+                            Editar Curso
+                        </a>
+                    {% endif %}
+
+                </div>
+            </div>
+
+            <!-- COLUMNA DERECHA: SECCIÓN DE LECCIONES -->
+            <div class="col-lg-8">
+                <h2 class="section-title">
+                    <i class="bi bi-play-circle-fill text-purple"></i>
+                    Lecciones del Curso
+                </h2>
+
+                {% if lecciones %}
+                    {% for lesson in lecciones %}
+                    <div class="lesson-card">
+                        
+                        <div class="lesson-header">
+                            <span class="lesson-badge">Lección {{ loop.index }}</span>
+                        </div>
+
+                        <h3 class="lesson-title">{{ lesson.titulo }}</h3>
+
+                        <div class="lesson-preview-box">
+                            <div class="lesson-preview-label">Vista Previa / Resumen</div>
+                            <p class="lesson-preview-content">
+                                {{ lesson.vistaPreviaCom if lesson.vistaPreviaCom else 'Sin vista previa disponible.' }}
+                            </p>
+                        </div>
+
+                        <div class="lesson-footer">
+                            <a href="/view_lesson/{{ lesson.id }}" target="_blank" class="btn-go-lesson">
+                                Ir a la lección
+                                <i class="bi bi-arrow-right-short fs-5"></i>
+                            </a>
+                        </div>
+
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="custom-alert">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Este curso aún no tiene lecciones publicadas.
+                    </div>
+                {% endif %}
+
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>

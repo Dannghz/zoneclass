@@ -419,14 +419,14 @@
                 </div>
             </div>
 
-            <div class="detail-box">
+             <div class="detail-box">
                 <div class="detail-box-title">Intereses Académicos</div>
                 <div class="detail-box-content">
-                    {{%if intereses.intereses %}}
-                        {{ intereses.intereses }}
-                    {{% else %}}
+                    {% if interes and interes.intereses %}
+                        {{ interes.intereses }}
+                    {% else %}
                         No has especificado intereses académicos.
-                    {{% endif %}}
+                    {% endif %}
                 </div>
             </div>
 

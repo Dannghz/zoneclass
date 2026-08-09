@@ -405,26 +405,26 @@
        1. NAVBAR MODERNO
        ========================================================================== -->
     <nav class="navbar-custom">
-        <a href="/menuUser" class="logo-container">
+        <a href="/menuInstru" class="logo-container">
             <div class="logo-icon">Z</div>
             <span class="logo-text">ZONECLASS</span>
         </a>
 
         <ul class="nav-links">
             <li>
-                <a href="/miscursos" class="nav-link-btn">
+                <a href="/insmiscursos" class="nav-link-btn">
                     <i class="bi bi-journal-bookmark-fill"></i>
                     Mis Cursos
                 </a>
             </li>
             <li>
-                <a href="/profile" class="nav-link-btn">
+                <a href="/instruprofile" class="nav-link-btn">
                     <i class="bi bi-person-circle"></i>
                     Perfil
                 </a>
             </li>
             <li>
-                <a href="#" class="nav-link-btn btn-logout" onclick="cerrarSesion(event)">
+                <a href="{{url_for('logout')}}" class="nav-link-btn btn-logout" >
                     <i class="bi bi-box-arrow-right"></i>
                     Cerrar Sesión
                 </a>
@@ -504,22 +504,22 @@
         </div>
 
         <div class="courses-grid-custom">
-            {% for curso in cursos %}
-            <a href="/view_course/{{ curso.id }}" class="course-card-link">
+            {% for profes in profe %}
+            <a href="/insviewcourse/{{ profes.id }}" class="course-card-link">
                 <div class="course-card-custom">
                     
                     <div class="course-card-body">
                         <span class="course-badge">Disponible</span>
                         
                         <h3 class="course-title-custom">
-                            {{ profe.titulo }}
+                            {{ profes.titulo }}
                         </h3>
 
                         <p class="course-desc-custom">
-                            {% if profe.descripcion|length > 140 %}
-                                {{ profe.descripcion[:140] }}...
+                            {% if profes.descripcion|length > 140 %}
+                                {{ profes.descripcion[:140] }}...
                             {% else %}
-                                {{ profe.descripcion }}
+                                {{ profes.descripcion }}
                             {% endif %}
                         </p>
                     </div>
@@ -527,12 +527,12 @@
                     <div class="course-card-footer">
                         <div class="metric-pill">
                             <i class="bi bi-journal-text"></i>
-                            <span>{{ profe.total_lecciones }} Lecciones</span>
+                            <span>{{ profes.total_lecciones }} Lecciones</span>
                         </div>
 
                         <div class="metric-pill">
                             <i class="bi bi-people-fill"></i>
-                            <span>{{ profe.total_estudiantes }} Alumnos</span>
+                            <span>{{ profes.total_estudiantes }} Alumnos</span>
                         </div>
                     </div>
 

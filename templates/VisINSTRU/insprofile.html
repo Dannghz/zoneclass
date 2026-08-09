@@ -359,8 +359,8 @@
             <span class="logo-text">ZONECLASS</span>
         </div>
         <ul class="nav-links">
-            <li><a href="/menuUser">Inicio</a></li>
-            <li><a href="/miscursos">Mis Cursos</a></li>
+            <li><a href="/menuInstru">Inicio</a></li>
+            <li><a href="/insmiscursos">Mis Cursos</a></li>
             <li>Mi Perfil</li>
         </ul>
     </nav>
@@ -422,11 +422,11 @@
             <div class="detail-box">
                 <div class="detail-box-title">Intereses Académicos</div>
                 <div class="detail-box-content">
-                    {{%if intereses.intereses %}}
-                        {{ intereses.intereses }}
-                    {{% else %}}
+                    {% if interes and interes.intereses %}
+                        {{ interes.intereses }}
+                    {% else %}
                         No has especificado intereses académicos.
-                    {{% endif %}}
+                    {% endif %}
                 </div>
             </div>
 
@@ -434,6 +434,13 @@
                 <div class="detail-box-title">Resumen de Actividad</div>
                 <div class="detail-box-content">
                     Inscrito actualmente en <strong>{{ cursos|length }}</strong> curso(s).
+                </div>
+            </div>
+
+            <div class="detail-box">
+                <div class="detail-box-title">Cursos creados</div>
+                <div class="detail-box-content">
+                    Has creado <strong>{{ usuario.total_cursos }}</strong> curso(s).
                 </div>
             </div>
 
@@ -454,7 +461,7 @@
 
         {% for curso in cursos %}
 
-        <a href="/view_course/{{ curso.id }}" class="user-course-card">
+        <a href="/insviewcourse/{{ curso.id }}" class="user-course-card">
 
             <div class="user-course-body">
 

@@ -6,10 +6,16 @@ app = Flask(__name__, template_folder="templates")
 app.secret_key = "clave_super_secreta"
 cursor = db.conexion.cursor()
 
+@app.after_request
+def add_header(response):
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
 
 @app.route("/")
 def logout():
-
+ 
     session.clear()
 
     return redirect(url_for("login"))
@@ -18,6 +24,8 @@ def logout():
 # login-------------------------------------------------------------------------------------------------------#
 
 
+
+# login-------------------------------------------------------------------------------------------------------#
 @app.route("/login", methods=["GET", "POST"])
 def login():
 
@@ -206,13 +214,13 @@ def profile():
     cursos = cursor.fetchall()
 
     cursor.execute("""
-     select
-        intereses
-     FROM inscripciones
-     WHERE usuario_id = %s
-    """, (usuario_id,))
-
-    intereses = cursor.fetchall()
+         select
+            inscripciones.intereses
+         FROM inscripciones
+         WHERE usuario_id = %s
+        """, (usuario_id,))
+    
+    interes = cursor.fetchone()
 
     cursor.close()
 
@@ -220,7 +228,7 @@ def profile():
         "VisUSERT/perfil.html",
         usuario=usuario,
         cursos=cursos,
-        intereses=intereses
+        interes=interes
     )
 
 #Miscursos-------------------------------------------------------------------------------------------------------#
@@ -347,33 +355,34 @@ def view_lesson(id):
         archivos_pdf=archivos_pdf
     )
 
-# Menu Usuarios-------------------------------------------------------------------------------------------------------#
+# Menu Instructores-------------------------------------------------------------------------------------------------------#
 
-@app.route("/menuInstru/<int:id>")
-def menuInstru(id):
+@app.route("/menuInstru")
+def menuInstru():
 
     if "user_id" not in session:
         return redirect(url_for("login"))
 
+    usuario_id = session["user_id"]
+
     cursor = db.conexion.cursor(dictionary=True)
 
     # 🔥 TODOS LOS CURSOS
-    cursor.execute(
-            """
-            SELECT
-        cursos.*,
-        COUNT(DISTINCT lecciones.id) AS total_lecciones,
-        COUNT(DISTINCT inscripciones.usuario_id) AS total_estudiantes
-            FROM cursos
-        LEFT JOIN lecciones
+    cursor.execute("""
+    SELECT
+    cursos.*,
+    COUNT(DISTINCT lecciones.id) AS total_lecciones,
+    COUNT(DISTINCT inscripciones.usuario_id) AS total_estudiantes
+    FROM cursos
+    LEFT JOIN lecciones
         ON cursos.id = lecciones.curso_id
-        LEFT JOIN inscripciones
+    LEFT JOIN inscripciones
         ON cursos.id = inscripciones.curso_id
-        GROUP BY cursos.id
-            """,(id,)
-        )
+    WHERE cursos.profesor_id = %s
+    GROUP BY cursos.id
+    """, (usuario_id,),)
 
-    profe=cursor.fetchall()
+    profe = cursor.fetchall()
     # 🔥 CURSOS INSCRITOS
     cursor.execute(
         """
@@ -396,6 +405,223 @@ def menuInstru(id):
     
     return render_template("VisINSTRU/menuInstru.html", cursos=cursos, profe=profe)
 
+# Perfil USERS-------------------------------------------------------------------------------------------------------#
+
+
+@app.route("/instruprofile")
+def instruprofile():
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    usuario_id = session["user_id"]
+
+    cursor = db.conexion.cursor(dictionary=True)
+
+
+    # Datos del usuario
+    cursor.execute("""
+        SELECT
+            usuarios.foto,
+            usuarios.nombre,
+            usuarios.edad,
+            usuarios.email,
+            COUNT(cursos.id) AS total_cursos
+        FROM usuarios
+        LEFT JOIN cursos ON usuarios.id = cursos.profesor_id
+        WHERE usuarios.id = %s
+        GROUP BY usuarios.id
+    """, (usuario_id,))
+
+    usuario = cursor.fetchone()
+
+    # Cursos inscritos
+    cursor.execute("""
+        SELECT
+            cursos.*,
+            COUNT(DISTINCT lecciones.id) AS total_lecciones
+        FROM cursos
+        INNER JOIN inscripciones
+            ON cursos.id = inscripciones.curso_id
+        LEFT JOIN lecciones
+            ON cursos.id = lecciones.curso_id
+        WHERE inscripciones.usuario_id = %s
+        GROUP BY cursos.id
+    """, (usuario_id,))
+
+    cursos = cursor.fetchall()
+
+    cursor.execute("""
+     select
+        inscripciones.intereses
+     FROM inscripciones
+     WHERE usuario_id = %s
+    """, (usuario_id,))
+
+    interes = cursor.fetchone()
+
+    cursor.close()
+
+    return render_template(
+        "VisINSTRU/insprofile.html",
+        usuario=usuario,
+        cursos=cursos,
+        interes=interes
+    )
+
+#Miscursos-------------------------------------------------------------------------------------------------------#
+
+@app.route("/insmiscursos")
+def insmiscursos():
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    usuario_id = session["user_id"]
+
+    cursor = db.conexion.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT
+        cursos.*,
+        COUNT(DISTINCT lecciones.id) AS total_lecciones
+        FROM cursos
+        LEFT JOIN lecciones
+            ON cursos.id = lecciones.curso_id
+        WHERE cursos.profesor_id = %s
+        GROUP BY cursos.id
+        """, (usuario_id,),)
+    
+    profe = cursor.fetchall()
+    
+    cursor.execute("""
+            SELECT
+                cursos.*,
+                COUNT(DISTINCT lecciones.id) AS total_lecciones
+            FROM cursos
+            INNER JOIN inscripciones
+                ON cursos.id = inscripciones.curso_id
+            LEFT JOIN lecciones
+                ON cursos.id = lecciones.curso_id
+            WHERE inscripciones.usuario_id = %s
+            GROUP BY cursos.id
+        """, (usuario_id,))
+
+    cursos = cursor.fetchall()
+
+    cursor.close()
+
+    return render_template(
+        "VisINSTRU/insmiscursos.html",
+        cursos=cursos, profe=profe
+    )
+
+#VistaCursos ----------------------------------------------------------------------------------------------------------#
+@app.route("/insviewcourse/<int:curso_id>")
+def insviewcourse(curso_id):
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    usuario_id = session["user_id"]
+
+    cursor = db.conexion.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT
+            cursos.*,
+            usuarios.nombre AS profesor_nombre
+        FROM cursos
+        INNER JOIN usuarios
+            ON usuarios.id = cursos.profesor_id
+        WHERE cursos.id = %s
+    """, (curso_id,))
+
+    curso = cursor.fetchone()
+
+    if curso is None:
+        cursor.close()
+        return "Curso no encontrado", 404
+
+    puede_editar = curso["profesor_id"] == usuario_id
+
+    cursor.execute("""
+        SELECT *
+        FROM lecciones
+        WHERE curso_id = %s
+    """, (curso_id,))
+
+    lecciones = cursor.fetchall()
+
+    cursor.close()
+
+    return render_template(
+        "VisINSTRU/insviewcourse.html",
+        curso=curso,
+        lecciones=lecciones,
+        puede_editar=puede_editar
+    )
+# ADMIN-------------------------------------------------------------------------------------------------------#
+
+@app.route("/editcourse/<int:id>", methods=["GET", "POST"])
+def editcourse(id):
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    usuario_id = session["user_id"]
+
+    cursor = db.conexion.cursor(dictionary=True)
+
+    # Verificar que el curso pertenece al profesor
+    cursor.execute("""
+        SELECT *
+        FROM cursos
+        WHERE id = %s
+        AND profesor_id = %s
+    """, (id, usuario_id))
+
+    curso = cursor.fetchone()
+
+    if curso is None:
+        cursor.close()
+        return "No tienes permiso para editar este curso.", 403
+
+    if request.method == "POST":
+
+        titulo = request.form["titulo"]
+        descripcion = request.form["descripcion"]
+        contenido = request.form["contenido"]
+        fecha_creacion = request.form["fecha_creacion"]
+
+        try:
+
+            cursor.execute("""
+                UPDATE cursos
+                SET titulo = %s,
+                    descripcion = %s,
+                    contenido = %s,
+                    fecha_creacion = %s
+                WHERE id = %s
+            """, (titulo, descripcion, contenido, fecha_creacion, id))
+
+            db.conexion.commit()
+
+            cursor.close()
+
+            return redirect(url_for("insviewcourse", curso_id=id))
+
+        except Exception as e:
+
+            db.conexion.rollback()
+
+            cursor.close()
+
+            return f"Error: {e}"
+
+    cursor.close()
+
+    return render_template("VisINSTRU/editarCurse.html", curso=curso)
 # ADMIN-------------------------------------------------------------------------------------------------------#
 
 
@@ -1387,7 +1613,11 @@ def regis(curso_id):
 
         cursor.close()
 
-        return redirect(url_for("menuUser"))
+        if "rol" in session and session["rol"] == "USUARIO":
+            return redirect(url_for("menuUser"))    
+        
+        if "rol" in session and session["rol"] == "PROFESOR":
+            return redirect(url_for("menuInstru"))
 
     # 🔥 insertar inscripción automática
     cursor.execute(
@@ -1404,8 +1634,12 @@ def regis(curso_id):
 
     cursor.close()
 
-    return redirect(url_for("menuUser"))
-
+    if "rol" in session and session["rol"] == "USUARIO":
+        return redirect(url_for("menuUser"))    
+           
+    if "rol" in session and session["rol"] == "PROFESOR":
+        return redirect(url_for("menuInstru"))
+   
 
 
 # ----------------------------------------------------------------------------------------------------------#
