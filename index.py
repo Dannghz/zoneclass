@@ -1,4 +1,5 @@
-from flask import Flask, render_template, redirect, url_for, request, session
+import re
+from flask import Flask, Response, render_template, redirect, url_for, request, session
 import database as db
 from datetime import datetime, date
 
@@ -20,7 +21,24 @@ def logout():
 
     return redirect(url_for("login"))
 
+@app.route("/foto/<int:id>")
+def mostrar_foto(id):
 
+    cursor = db.conexion.cursor(dictionary=True)
+
+    cursor.execute(
+        "SELECT foto FROM usuarios WHERE id = %s",
+        (id,)
+    )
+
+    usuario = cursor.fetchone()
+
+    cursor.close()
+
+    if usuario and usuario["foto"]:
+        return Response(usuario["foto"], mimetype="image/jpeg")
+
+    return "", 404
 # login-------------------------------------------------------------------------------------------------------#
 
 
@@ -87,7 +105,6 @@ def register():
         edad = request.form["edad"]
         email = request.form["email"]
         contrasena = request.form["contrasena"]
-        rol = request.form["rol"]
         fecha_registro = request.form["fecha_registro"]
 
         error = None
@@ -115,10 +132,10 @@ def register():
 
             cursor.execute(
                 """
-                INSERT INTO usuarios (nombre,edad,email,contrasena,rol,fecha_registro)
-                VALUES (%s,%s,%s,%s,%s,%s)
+                INSERT INTO usuarios (nombre,edad,email,contrasena,fecha_registro)
+                VALUES (%s,%s,%s,%s,%s)
                 """,
-                (nombre, edad, email, contrasena, rol, fecha_registro),
+                (nombre, edad, email, contrasena,  fecha_registro),
             )
 
             db.conexion.commit()
@@ -229,6 +246,296 @@ def profile():
         usuario=usuario,
         cursos=cursos,
         interes=interes
+    )
+
+
+@app.route("/editprofile/<int:id>", methods=["GET", "POST"])
+def editprofile(id):
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    # Seguridad: el usuario solamente puede editar su propio perfil
+    if session["user_id"] != id:
+        return redirect(url_for("profile"))
+
+    cursor = db.conexion.cursor(dictionary=True)
+
+    errores = []
+
+    if request.method == "POST":
+
+        # Obtener datos y quitar espacios innecesarios
+        nombre = request.form.get("nombre", "").strip()
+        edad = request.form.get("edad", "").strip()
+        email = request.form.get("email", "").strip().lower()
+        intereses = request.form.get("intereses", "").strip()
+
+        # =========================
+        # VALIDACIÓN NOMBRE
+        # =========================
+
+        if not nombre:
+            errores.append("El nombre es obligatorio.")
+
+        elif len(nombre) < 2:
+            errores.append("El nombre debe tener al menos 2 caracteres.")
+
+        elif len(nombre) > 100:
+            errores.append("El nombre no puede superar los 100 caracteres.")
+
+        elif not re.match(r"^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]+$", nombre):
+            errores.append("El nombre solamente puede contener letras y espacios.")
+
+        # =========================
+        # VALIDACIÓN EDAD
+        # =========================
+
+        edad_numero = None
+
+        if not edad:
+            errores.append("La edad es obligatoria.")
+
+        else:
+            try:
+                edad_numero = int(edad)
+
+                if edad_numero < 13 or edad_numero > 100:
+                    errores.append("La edad debe estar entre 13 y 100 años.")
+
+            except ValueError:
+                errores.append("La edad debe ser un número entero.")
+
+        # =========================
+        # VALIDACIÓN EMAIL
+        # =========================
+
+        if not email:
+            errores.append("El correo electrónico es obligatorio.")
+
+        elif len(email) > 150:
+            errores.append("El correo electrónico es demasiado largo.")
+
+        elif not re.match(
+            r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$",
+            email
+        ):
+            errores.append("Ingresa un correo electrónico válido.")
+
+        else:
+            # Verificar que el correo no pertenezca a otro usuario
+            cursor.execute("""
+                SELECT id
+                FROM usuarios
+                WHERE email = %s
+                AND id != %s
+            """, (email, id))
+
+            email_existente = cursor.fetchone()
+
+            if email_existente:
+                errores.append(
+                    "Ese correo electrónico ya está registrado por otro usuario."
+                )
+
+        # =========================
+        # VALIDACIÓN INTERESES
+        # =========================
+
+        if not intereses:
+            errores.append("Debes indicar tus intereses.")
+
+        elif len(intereses) < 3:
+            errores.append("Los intereses deben tener al menos 3 caracteres.")
+
+        elif len(intereses) > 500:
+            errores.append("Los intereses no pueden superar los 500 caracteres.")
+
+        # =========================
+        # VALIDACIÓN FOTO
+        # =========================
+
+        foto = request.files.get("foto")
+
+        foto_blob = None
+
+        if foto and foto.filename != "":
+
+            extensiones_permitidas = {
+                "jpg",
+                "jpeg",
+                "png",
+                "webp"
+            }
+
+            nombre_archivo = foto.filename.lower()
+
+            if "." not in nombre_archivo:
+                errores.append("La foto no tiene una extensión válida.")
+
+            else:
+                extension = nombre_archivo.rsplit(".", 1)[1]
+
+                if extension not in extensiones_permitidas:
+                    errores.append(
+                        "La foto debe ser JPG, JPEG, PNG o WEBP."
+                    )
+
+            # Validar tamaño máximo: 5 MB
+            foto.seek(0, 2)
+            tamaño = foto.tell()
+            foto.seek(0)
+
+            if tamaño > 5 * 1024 * 1024:
+                errores.append("La foto no puede superar los 5 MB.")
+
+            if not errores:
+                foto_blob = foto.read()
+
+        # =========================
+        # SI HAY ERRORES
+        # =========================
+
+        if errores:
+
+            # Volver a obtener los datos actuales
+            cursor.execute("""
+                SELECT
+                    id,
+                    foto,
+                    nombre,
+                    edad,
+                    email
+                FROM usuarios
+                WHERE id = %s
+            """, (id,))
+
+            user = cursor.fetchone()
+
+            # Obtener intereses actuales
+            cursor.execute("""
+                SELECT intereses
+                FROM inscripciones
+                WHERE usuario_id = %s
+                LIMIT 1
+            """, (id,))
+
+            inscripcion = cursor.fetchone()
+
+            cursor.close()
+
+            # Mantener lo que el usuario escribió en el formulario
+            user["nombre"] = nombre
+            user["edad"] = edad
+            user["email"] = email
+
+            interes_actual = intereses
+
+            return render_template(
+                "VisUSERT/editperfil.html",
+                user=user,
+                interes=interes_actual,
+                errores=errores
+            )
+
+        # =========================
+        # ACTUALIZAR USUARIO
+        # =========================
+
+        if foto_blob is not None:
+
+            cursor.execute("""
+                UPDATE usuarios
+                SET nombre = %s,
+                    edad = %s,
+                    email = %s,
+                    foto = %s
+                WHERE id = %s
+            """, (
+                nombre,
+                edad_numero,
+                email,
+                foto_blob,
+                id
+            ))
+
+        else:
+
+            cursor.execute("""
+                UPDATE usuarios
+                SET nombre = %s,
+                    edad = %s,
+                    email = %s
+                WHERE id = %s
+            """, (
+                nombre,
+                edad_numero,
+                email,
+                id
+            ))
+
+        # =========================
+        # ACTUALIZAR INTERESES
+        # =========================
+
+        cursor.execute("""
+            UPDATE inscripciones
+            SET intereses = %s
+            WHERE usuario_id = %s
+        """, (
+            intereses,
+            id
+        ))
+
+        db.conexion.commit()
+
+        cursor.close()
+
+        return redirect(url_for("profile"))
+
+    # =========================
+    # GET
+    # =========================
+
+    cursor.execute("""
+        SELECT
+            id,
+            foto,
+            nombre,
+            edad,
+            email
+        FROM usuarios
+        WHERE id = %s
+    """, (id,))
+
+    user = cursor.fetchone()
+
+    if not user:
+        cursor.close()
+        return redirect(url_for("profile"))
+
+    # Obtener intereses
+    cursor.execute("""
+        SELECT intereses
+        FROM inscripciones
+        WHERE usuario_id = %s
+        LIMIT 1
+    """, (id,))
+
+    inscripcion = cursor.fetchone()
+
+    interes = ""
+
+    if inscripcion:
+        interes = inscripcion.get("intereses") or ""
+
+    cursor.close()
+
+    return render_template(
+        "VisUSERT/editperfil.html",
+        user=user,
+        interes=interes,
+        errores=[]
     )
 
 #Miscursos-------------------------------------------------------------------------------------------------------#
