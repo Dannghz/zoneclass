@@ -26,10 +26,15 @@
         <div class="alert alert-danger">{{ error }}</div>
         {% endif %}
 
-        <form action="{{ url_for('register') }}" method="POST">
+        <form action="{{ url_for('usuarios.register') }}" method="POST">
           <div class="mb-3">
             <label>Nombre:</label>
             <input type="text" class="form-control" name="nombre" value="{{ user.nombre if user else '' }}" />
+          </div>
+
+          <div class="mb-3">
+            <label>Edad:</label>
+            <input type="number" class="form-control" name="edad" value="{{ user.edad if user else '' }}" />
           </div>
 
           <div class="mb-3">
@@ -38,23 +43,17 @@
           </div>
 
           <div class="mb-3">
+            <label>Intereses:</label>
+            <textarea class="form-control" name="intereses">{{ user.intereses if user else '' }}</textarea>
+          </div>
+
+          <div class="mb-3">
             <label>Contraseña:</label>
             <input type="password" class="form-control" name="contrasena"
               value="{{ user.contrasena if user else '' }}" />
           </div>
 
-          <div class="mb-3">
-            <label>Rol:</label>
-
-            <select name="rol" class="form-control">
-              <option value="USUARIO"
-    {% if user and user.rol == "USUARIO" %}selected{% endif %}>
-    USUARIO
-    </option>
-
-
-            </select>
-          </div>
+    
           <div class="mb-3">
             <label>Fecha Registro:</label>
             <input type="date" class="form-control" name="fecha_registro" value="{{ user.fecha_registro.strftime('%Y-%m-%d') if user else '' }}">
