@@ -272,3 +272,336 @@ def editcourse(id):
     cursor.close()
 
     return render_template("VisINSTRU/editarCurse.html", curso=curso)
+
+# ViewLesson-------------------------------------------------------------------------------------------------------#
+@profesor_bp.route("/insViewlesson/<int:id>")
+def insViewlesson(id):
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    usuario_id = session["user_id"]
+
+    cursor = db.conexion.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT c.profesor_id 
+    FROM lecciones l
+    INNER JOIN cursos c ON l.curso_id = c.id
+    WHERE l.id = %s """, (id,))
+
+    resultado = cursor.fetchone()
+
+    puede_editar = resultado["profesor_id"] == usuario_id
+
+    cursor.execute("""
+        SELECT curso_id,
+        profesor_id
+        FROM cursos """)
+
+    cursor.execute("""
+        SELECT *
+        FROM lecciones
+        WHERE id = %s
+    """, (id,))
+
+    leccion = cursor.fetchone()
+
+    if not leccion:
+
+        cursor.close()
+
+        return "Lección no encontrada", 404
+
+    cursor.execute("""
+        SELECT
+            id,
+            leccion_id,
+            nombre,
+            ruta,
+            `orden`,
+            fechaSubida
+        FROM archivospdf
+        WHERE leccion_id = %s
+        ORDER BY `orden`, id
+    """, (id,))
+
+    archivos_pdf = cursor.fetchall()
+
+    cursor.close()
+
+    return render_template(
+        "VisINSTRU/insViewleson.html",
+        leccion=leccion,
+        archivos_pdf=archivos_pdf,
+        puede_editar=puede_editar
+    )
+# Edit Lesson-------------------------------------------------------------------------------------------------------#
+
+import os
+import uuid
+
+from werkzeug.utils import secure_filename
+
+
+UPLOAD_FOLDER = os.path.join(
+    "static",
+    "uploads",
+    "lecciones"
+)
+
+EXTENSIONES_PERMITIDAS = {"pdf"}
+
+
+@profesor_bp.route("/crear_leccion/<int:curso_id>", methods=["GET", "POST"])
+def crear_leccion(curso_id):
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    cursor = db.conexion.cursor(dictionary=True)
+
+    errores = []
+
+    # ==========================================
+    # COMPROBAR QUE EL CURSO EXISTE
+    # ==========================================
+
+    cursor.execute("""
+        SELECT *
+        FROM cursos
+        WHERE id = %s
+    """, (curso_id,))
+
+    curso = cursor.fetchone()
+
+    if not curso:
+        cursor.close()
+        return "Curso no encontrado", 404
+
+    # ==========================================
+    # POST
+    # ==========================================
+
+    if request.method == "POST":
+
+        titulo = request.form.get("titulo", "").strip()
+        descripcion = request.form.get("descripcion", "").strip()
+
+        archivos = request.files.getlist("archivos")
+
+        # ==========================================
+        # VALIDAR TÍTULO
+        # ==========================================
+
+        if not titulo:
+
+            errores.append(
+                "El título de la lección es obligatorio."
+            )
+
+        elif len(titulo) < 3:
+
+            errores.append(
+                "El título debe tener al menos 3 caracteres."
+            )
+
+        elif len(titulo) > 255:
+
+            errores.append(
+                "El título no puede superar los 255 caracteres."
+            )
+
+        # ==========================================
+        # VALIDAR DESCRIPCIÓN
+        # ==========================================
+
+        if len(descripcion) > 2000:
+
+            errores.append(
+                "La descripción no puede superar los 2000 caracteres."
+            )
+
+        # ==========================================
+        # VALIDAR ARCHIVOS
+        # ==========================================
+
+        archivos_validos = []
+
+        for archivo in archivos:
+
+            if not archivo or archivo.filename == "":
+                continue
+
+            nombre = secure_filename(archivo.filename)
+
+            if "." not in nombre:
+
+                errores.append(
+                    f"El archivo {nombre} no tiene una extensión válida."
+                )
+
+                continue
+
+            extension = nombre.rsplit(".", 1)[1].lower()
+
+            if extension not in EXTENSIONES_PERMITIDAS:
+
+                errores.append(
+                    f"El archivo {nombre} debe ser un PDF."
+                )
+
+                continue
+
+            # Máximo 10 MB por PDF
+            archivo.seek(0, 2)
+
+            tamaño = archivo.tell()
+
+            archivo.seek(0)
+
+            if tamaño > 10 * 1024 * 1024:
+
+                errores.append(
+                    f"El archivo {nombre} supera el límite de 10 MB."
+                )
+
+                continue
+
+            archivos_validos.append(archivo)
+
+        # ==========================================
+        # SI HAY ERRORES
+        # ==========================================
+
+        if errores:
+
+            cursor.close()
+
+            return render_template(
+                "VisPROF/crear_leccion.html",
+                curso=curso,
+                errores=errores
+            )
+
+        # ==========================================
+        # CREAR CARPETA
+        # ==========================================
+
+        os.makedirs(
+            UPLOAD_FOLDER,
+            exist_ok=True
+        )
+
+        # ==========================================
+        # CREAR LECCIÓN
+        # ==========================================
+
+        cursor.execute("""
+            INSERT INTO lecciones
+            (
+                curso_id,
+                titulo,
+                descripcion
+            )
+            VALUES
+            (
+                %s,
+                %s,
+                %s
+            )
+        """, (
+            curso_id,
+            titulo,
+            descripcion
+        ))
+
+        leccion_id = cursor.lastrowid
+
+        # ==========================================
+        # GUARDAR PDFs
+        # ==========================================
+
+        orden = 1
+
+        for archivo in archivos_validos:
+
+            nombre_original = secure_filename(
+                archivo.filename
+            )
+
+            extension = nombre_original.rsplit(
+                ".",
+                1
+            )[1].lower()
+
+            nombre_unico = (
+                str(uuid.uuid4())
+                + "."
+                + extension
+            )
+
+            ruta_fisica = os.path.join(
+                UPLOAD_FOLDER,
+                nombre_unico
+            )
+
+            archivo.save(ruta_fisica)
+
+            # Esta es la ruta que guardamos en MySQL
+            ruta_bd = os.path.join(
+                "uploads",
+                "lecciones",
+                nombre_unico
+            ).replace("\\", "/")
+
+            cursor.execute("""
+                INSERT INTO archivospdf
+                (
+                    leccion_id,
+                    nombre,
+                    ruta,
+                    `orden`
+                )
+                VALUES
+                (
+                    %s,
+                    %s,
+                    %s,
+                    %s
+                )
+            """, (
+                leccion_id,
+                nombre_original,
+                ruta_bd,
+                orden
+            ))
+
+            orden += 1
+
+        # ==========================================
+        # GUARDAR TODO
+        # ==========================================
+
+        db.conexion.commit()
+
+        cursor.close()
+
+        return redirect(
+            url_for(
+                "view_lesson",
+                id=leccion_id
+            )
+        )
+
+    # ==========================================
+    # GET
+    # ==========================================
+
+    cursor.close()
+
+    return render_template(
+        "VisPROF/crear_leccion.html",
+        curso=curso,
+        errores=[]
+    )
