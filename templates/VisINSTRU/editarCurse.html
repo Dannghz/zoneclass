@@ -22,7 +22,7 @@
             <div class="card-body">{% if error %}
 
                 <div class="alert alert-danger">{{ error }}</div> 
-                {% endif %}<form action="{{ url_for('editcourse', id=curso.id) }}" method="POST">
+                {% endif %}<form action="{{ url_for('profesor.editcourse', id=curso.id) }}" method="POST">
                     <div class="mb-3">
                         <label class="form-label">Título del Curso</label><input type="text" class="form-control"
                             name="titulo" placeholder="Ej: Programación en Java"

@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Editar lección</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            color: #1f2937;
+        }
+
+        .contenedor {
+            max-width: 950px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 18px;
+            padding: 30px;
+            box-shadow: 0 8px 30px rgba(0,0,0,.08);
+        }
+
+        h1 {
+            margin-top: 0;
+        }
+
+        .subtitulo {
+            color: #6b7280;
+            margin-bottom: 30px;
+        }
+
+        .campo {
+            margin-bottom: 22px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 13px;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            font-size: 15px;
+            font-family: inherit;
+        }
+
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        input:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+
+        .errores {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+
+        .errores li {
+            margin-bottom: 5px;
+        }
+
+        .seccion {
+            margin-top: 30px;
+        }
+
+        .seccion h2 {
+            font-size: 20px;
+        }
+
+        .archivo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            background: #fafafa;
+        }
+
+        .archivo-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .archivo-nombre {
+            font-weight: bold;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .archivo-fecha {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+
+        .orden {
+            width: 80px;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .orden-label {
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+
+        .eliminar {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #b91c1c;
+            font-size: 13px;
+        }
+
+        .nuevos {
+            border: 2px dashed #c7d2fe;
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            background: #f8faff;
+        }
+
+        .nuevos input {
+            margin-top: 15px;
+        }
+
+        .ayuda {
+            color: #6b7280;
+            font-size: 13px;
+            margin-top: 10px;
+        }
+
+        .botones {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 30px;
+        }
+
+        button,
+        .cancelar {
+            border: none;
+            padding: 13px 22px;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .guardar {
+            background: #4f46e5;
+            color: white;
+        }
+
+        .guardar:hover {
+            background: #4338ca;
+        }
+
+        .cancelar {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        @media (max-width: 650px) {
+
+            .archivo {
+                flex-wrap: wrap;
+            }
+
+            .archivo-info {
+                width: 100%;
+            }
+
+            .botones {
+                flex-direction: column;
+            }
+
+            button,
+            .cancelar {
+                width: 100%;
+                text-align: center;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="contenedor">
+
+    <div class="card">
+
+        <h1>
+            Editar lección
+        </h1>
+
+        <p class="subtitulo">
+            Modifica la información y organiza el material de la lección.
+        </p>
+
+
+        {% if errores %}
+
+            <div class="errores">
+
+                <strong>
+                    Hay algunos problemas:
+                </strong>
+
+                <ul>
+
+                    {% for error in errores %}
+
+                        <li>
+                            {{ error }}
+                        </li>
+
+                    {% endfor %}
+
+                </ul>
+
+            </div>
+
+        {% endif %}
+
+
+        <form
+            action="{{ url_for('profesor.editlesson', id=leccion.id) }}"
+            method="POST"
+            enctype="multipart/form-data"
+            id="formEditar"
+        >
+
+            <!-- =====================================
+                 INFORMACIÓN DE LA LECCIÓN
+            ====================================== -->
+
+            <div class="campo">
+
+                <label for="titulo">
+                    Título
+                </label>
+
+                <input
+                    type="text"
+                    id="titulo"
+                    name="titulo"
+                    maxlength="255"
+                    value="{{ leccion.titulo or '' }}"
+                    required
+                >
+
+            </div>
+
+
+            <div class="campo">
+
+                <label for="vistaPreviaCon">
+                    Vista previa
+                </label>
+
+                <input
+                    type="text"
+                    id="vistaPreviaCon"
+                    name="vistaPreviaCon"
+                    maxlength="100"
+                    value="{{ leccion.vistaPreviaCon or '' }}"
+                >
+
+            </div>
+
+
+            <div class="campo">
+
+                <label for="contenido">
+                    Contenido
+                </label>
+
+                <textarea
+                    id="contenido"
+                    name="contenido"
+                >{{ leccion.contenido or '' }}</textarea>
+
+            </div>
+
+
+            <!-- =====================================
+                 PDF EXISTENTES
+            ====================================== -->
+
+            <div class="seccion">
+
+                <h2>
+                    Archivos de la lección
+                </h2>
+
+                <p class="ayuda">
+                    Si tienes 3 archivos, los órdenes válidos son
+                    1, 2 y 3.
+                </p>
+
+
+                {% if archivos_pdf %}
+
+                    {% for archivo in archivos_pdf %}
+
+                        <div class="archivo">
+
+                            <div class="archivo-info">
+
+                                <div class="archivo-nombre">
+                                    📄 {{ archivo.nombre }}
+                                </div>
+
+                                <div class="archivo-fecha">
+
+                                    Subido:
+                                    {{ archivo.fechaSubida }}
+
+                                </div>
+
+                            </div>
+
+
+                            <div>
+
+                                <div class="orden-label">
+                                    Orden
+                                </div>
+
+                                <input
+                                    type="number"
+                                    class="orden"
+                                    name="orden_{{ archivo.id }}"
+                                    value="{{ archivo.orden }}"
+                                    min="1"
+                                >
+
+                            </div>
+
+
+                            <label class="eliminar">
+
+                                <input
+                                    type="checkbox"
+                                    name="eliminar_pdf"
+                                    value="{{ archivo.id }}"
+                                >
+
+                                Eliminar
+
+                            </label>
+
+                        </div>
+
+                    {% endfor %}
+
+                {% else %}
+
+                    <p>
+                        Esta lección todavía no tiene PDFs.
+                    </p>
+
+                {% endif %}
+
+            </div>
+
+
+            <!-- =====================================
+                 AGREGAR PDFs
+            ====================================== -->
+
+            <div class="seccion">
+
+                <h2>
+                    Agregar nuevos PDFs
+                </h2>
+
+                <div class="nuevos">
+
+                    <p>
+                        Puedes agregar uno o varios archivos PDF.
+                    </p>
+
+                    <input
+                        type="file"
+                        name="archivos"
+                        accept=".pdf,application/pdf"
+                        multiple
+                    >
+
+                    <p class="ayuda">
+                        Solo PDF. Máximo 10 MB por archivo.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- =====================================
+                 BOTONES
+            ====================================== -->
+
+            <div class="botones">
+
+                <a
+                    href="{{ url_for('profesor_bp.insViewlesson', id=leccion.id) }}"
+                    class="cancelar"
+                >
+                    Cancelar
+                </a>
+
+                <button
+                    type="submit"
+                    class="guardar"
+                >
+                    Guardar cambios
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    document
+        .getElementById("formEditar")
+        .addEventListener("submit", function(event) {
+
+            const ordenes = [];
+
+            const eliminados = Array.from(
+                document.querySelectorAll(
+                    'input[name="eliminar_pdf"]:checked'
+                )
+            ).map(function(input) {
+                return input.value;
+            });
+
+
+            document
+                .querySelectorAll('input[name^="orden_"]')
+                .forEach(function(input) {
+
+                    const id =
+                        input.name.replace("orden_", "");
+
+                    if (!eliminados.includes(id)) {
+
+                        ordenes.push(
+                            parseInt(input.value)
+                        );
+
+                    }
+
+                });
+
+
+            const nuevos =
+                document.querySelector(
+                    'input[name="archivos"]'
+                ).files.length;
+
+
+            const total =
+                ordenes.length + nuevos;
+
+
+            // Si no hay archivos, no validar orden.
+
+            if (total === 0) {
+                return;
+            }
+
+
+            const ordenesEsperados = [];
+
+            for (
+                let i = 1;
+                i <= total;
+                i++
+            ) {
+
+                ordenesEsperados.push(i);
+
+            }
+
+
+            ordenes.sort(function(a, b) {
+                return a - b;
+            });
+
+
+            // Los nuevos archivos ocuparán los siguientes
+            // números, por lo que aquí solamente verificamos
+            // los existentes.
+
+            for (
+                let i = 0;
+                i < ordenes.length;
+                i++
+            ) {
+
+                if (
+                    !Number.isInteger(ordenes[i]) ||
+                    ordenes[i] < 1 ||
+                    ordenes[i] > total
+                ) {
+
+                    event.preventDefault();
+
+                    alert(
+                        "Los órdenes deben estar entre 1 y " +
+                        total +
+                        "."
+                    );
+
+                    return;
+
+                }
+
+            }
+
+        });
+
+</script>
+
+</body>
+
+</html>

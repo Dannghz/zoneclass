@@ -359,20 +359,20 @@
 
     <!-- NAVBAR -->
     <nav class="navbar-custom">
-        <a href="/menuUser" class="logo-container">
+        <a href="/menuInstru" class="logo-container">
             <div class="logo-icon">Z</div>
             <span class="logo-text">ZONECLASS</span>
         </a>
 
         <ul class="nav-links">
             <li>
-                <a href="/miscursos" class="nav-link-btn">
+                <a href="{{ url_for('profesor.insmiscursos') }}" class="nav-link-btn">
                     <i class="bi bi-journal-bookmark-fill"></i>
                     Mis Cursos
                 </a>
             </li>
             <li>
-                <a href="/profile" class="nav-link-btn">
+                <a href="{{ url_for('profesor.instruprofile') }}" class="nav-link-btn">
                     <i class="bi bi-person-circle"></i>
                     Perfil
                 </a>
@@ -385,7 +385,7 @@
 
         <!-- BARRA SUPERIOR DE ACCIÓN -->
         <div class="top-bar-action">
-            <a href="/view_course/{{ leccion.curso_id }}" class="btn-back">
+            <a href="{{ url_for('profesor.insviewcourse', curso_id=leccion.curso_id) }}" class="btn-back">
                 <i class="bi bi-arrow-left"></i>
                 Volver al curso
             </a>
@@ -403,9 +403,9 @@
                 </div>
 
                 {% if puede_editar %}
-                        <a href="/editcourse/{{ curso.id }}" class="btn-edit">
+                        <a href="{{ url_for('profesor.editlesson', id=leccion.id) }}" class="btn-edit">
                             <i class="bi bi-pencil-square me-2"></i>
-                            Editar Curso
+                            Editar Lección
                         </a>
                 {% endif %}
             </article>

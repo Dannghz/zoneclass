@@ -257,13 +257,13 @@
 
         <ul class="nav-links">
             <li>
-                <a href="/menuInstru" class="nav-link-btn">
+                <a href="{{ url_for('profesor.menuInstru') }}" class="nav-link-btn">
                     <i class="bi bi-house-door-fill"></i>
                     Inicio
                 </a>
             </li>
             <li>
-                <a href="/instruprofile" class="nav-link-btn">
+                <a href="{{ url_for('profesor.instruprofile') }}" class="nav-link-btn">
                     <i class="bi bi-person-circle"></i>
                     Mi Perfil
                 </a>
@@ -282,7 +282,7 @@
 
             {% for profes in profe %}
 
-            <a href="/view_course/{{ profes.id }}" class="user-course-card">
+            <a href="{{ url_for('profesor.insviewcourse', curso_id=profes.id) }}" class="user-course-card">
 
                 <div class="user-course-body">
 
@@ -339,7 +339,7 @@
 
             {% for curso in cursos %}
 
-            <a href="/view_course/{{ curso.id }}" class="user-course-card">
+            <a href="{{ url_for('profesor.insviewcourse', curso_id=curso.id) }}" class="user-course-card">
 
                 <div class="user-course-body">
 

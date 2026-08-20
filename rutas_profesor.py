@@ -1,6 +1,9 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, Response
 import database as db
-from datetime import datetime, date
+from datetime import datetime, date 
+import os
+import uuid
+from werkzeug.utils import secure_filename
 
 # 1. Creas el "pedazo" de aplicación (Blueprint)
 profesor_bp = Blueprint('profesor', __name__)
@@ -76,6 +79,7 @@ def instruprofile():
             usuarios.nombre,
             usuarios.edad,
             usuarios.email,
+            usuarios.intereses,
             COUNT(cursos.id) AS total_cursos
         FROM usuarios
         LEFT JOIN cursos ON usuarios.id = cursos.profesor_id
@@ -101,14 +105,7 @@ def instruprofile():
 
     cursos = cursor.fetchall()
 
-    cursor.execute("""
-     select
-        inscripciones.intereses
-     FROM inscripciones
-     WHERE usuario_id = %s
-    """, (usuario_id,))
-
-    interes = cursor.fetchone()
+    
 
     cursor.close()
 
@@ -116,7 +113,301 @@ def instruprofile():
         "VisINSTRU/insprofile.html",
         usuario=usuario,
         cursos=cursos,
-        interes=interes
+    )
+
+#Edit profile-------------------------------------------------------------------------------------------------------#
+@profesor_bp.route("/insEditprofile/<int:id>", methods=["GET", "POST"])
+def insEditprofile(id):
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    # El usuario solamente puede editar su propio perfil
+    if session["user_id"] != id:
+        return redirect(url_for("profile"))
+
+    cursor = db.conexion.cursor(dictionary=True)
+
+    errores = []
+
+    if request.method == "POST":
+
+        nombre = request.form.get("nombre", "").strip()
+        edad = request.form.get("edad", "").strip()
+        email = request.form.get("email", "").strip().lower()
+        intereses = request.form.get("intereses", "").strip()
+
+        # =========================
+        # VALIDAR NOMBRE
+        # =========================
+
+        if not nombre:
+            errores.append("El nombre es obligatorio.")
+
+        elif len(nombre) < 2:
+            errores.append("El nombre debe tener al menos 2 caracteres.")
+
+        elif len(nombre) > 100:
+            errores.append("El nombre no puede superar los 100 caracteres.")
+
+        elif not re.match(
+            r"^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]+$",
+            nombre
+        ):
+            errores.append(
+                "El nombre solamente puede contener letras y espacios."
+            )
+
+        # =========================
+        # VALIDAR EDAD
+        # =========================
+
+        edad_numero = None
+
+        if not edad:
+
+            errores.append("La edad es obligatoria.")
+
+        else:
+
+            try:
+
+                edad_numero = int(edad)
+
+                if edad_numero < 13 or edad_numero > 100:
+                    errores.append(
+                        "La edad debe estar entre 13 y 100 años."
+                    )
+
+            except ValueError:
+
+                errores.append(
+                    "La edad debe ser un número entero."
+                )
+
+        # =========================
+        # VALIDAR EMAIL
+        # =========================
+
+        if not email:
+
+            errores.append(
+                "El correo electrónico es obligatorio."
+            )
+
+        elif len(email) > 150:
+
+            errores.append(
+                "El correo electrónico es demasiado largo."
+            )
+
+        elif not re.match(
+            r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$",
+            email
+        ):
+
+            errores.append(
+                "Ingresa un correo electrónico válido."
+            )
+
+        else:
+
+            cursor.execute("""
+                SELECT id
+                FROM usuarios
+                WHERE email = %s
+                AND id != %s
+            """, (email, id))
+
+            email_existente = cursor.fetchone()
+
+            if email_existente:
+
+                errores.append(
+                    "Ese correo electrónico ya está registrado por otro usuario."
+                )
+
+        # =========================
+        # VALIDAR INTERESES
+        # =========================
+
+        if not intereses:
+
+            errores.append(
+                "Debes indicar tus intereses."
+            )
+
+        elif len(intereses) < 3:
+
+            errores.append(
+                "Los intereses deben tener al menos 3 caracteres."
+            )
+
+        elif len(intereses) > 500:
+
+            errores.append(
+                "Los intereses no pueden superar los 500 caracteres."
+            )
+
+        # =========================
+        # VALIDAR FOTO
+        # =========================
+
+        foto = request.files.get("foto")
+
+        foto_blob = None
+
+        if foto and foto.filename != "":
+
+            extensiones_permitidas = {
+                "jpg",
+                "jpeg",
+                "png",
+                "webp"
+            }
+
+            nombre_archivo = foto.filename.lower()
+
+            if "." not in nombre_archivo:
+
+                errores.append(
+                    "La foto no tiene una extensión válida."
+                )
+
+            else:
+
+                extension = nombre_archivo.rsplit(".", 1)[1]
+
+                if extension not in extensiones_permitidas:
+
+                    errores.append(
+                        "La foto debe ser JPG, JPEG, PNG o WEBP."
+                    )
+
+            # Máximo 5 MB
+            foto.seek(0, 2)
+            tamaño = foto.tell()
+            foto.seek(0)
+
+            if tamaño > 5 * 1024 * 1024:
+
+                errores.append(
+                    "La foto no puede superar los 5 MB."
+                )
+
+            if not errores:
+
+                foto_blob = foto.read()
+
+        # =========================
+        # SI HAY ERRORES
+        # =========================
+
+        if errores:
+
+            cursor.execute("""
+                SELECT
+                    id,
+                    foto,
+                    nombre,
+                    edad,
+                    email,
+                    intereses
+                FROM usuarios
+                WHERE id = %s
+            """, (id,))
+
+            user = cursor.fetchone()
+
+            # Mantener los valores escritos
+            user["nombre"] = nombre
+            user["edad"] = edad
+            user["email"] = email
+            user["intereses"] = intereses
+
+            cursor.close()
+
+            return render_template(
+                "VisINSTRU/insEditperfil.html",
+                user=user,
+                errores=errores
+            )
+
+        # =========================
+        # ACTUALIZAR USUARIO
+        # =========================
+
+        if foto_blob is not None:
+
+            cursor.execute("""
+                UPDATE usuarios
+                SET
+                    nombre = %s,
+                    edad = %s,
+                    email = %s,
+                    intereses = %s,
+                    foto = %s
+                WHERE id = %s
+            """, (
+                nombre,
+                edad_numero,
+                email,
+                intereses,
+                foto_blob,
+                id
+            ))
+
+        else:
+
+            cursor.execute("""
+                UPDATE usuarios
+                SET
+                    nombre = %s,
+                    edad = %s,
+                    email = %s,
+                    intereses = %s
+                WHERE id = %s
+            """, (
+                nombre,
+                edad_numero,
+                email,
+                intereses,
+                id
+            ))
+
+        db.conexion.commit()
+
+        cursor.close()
+
+        return redirect(url_for("profesor.instruprofile"))
+
+    # =========================
+    # GET
+    # =========================
+
+    cursor.execute("""
+        SELECT
+            id,
+            foto,
+            nombre,
+            edad,
+            email,
+            intereses
+        FROM usuarios
+        WHERE id = %s
+    """, (id,))
+
+    user = cursor.fetchone()
+
+    cursor.close()
+
+    if not user:
+        return redirect(url_for("profesor.instruprofile"))
+
+    return render_template(
+        "VisINSTRU/insEditperfil.html",
+        user=user,
+        errores=[]
     )
 
 #Miscursos-------------------------------------------------------------------------------------------------------#
@@ -338,46 +629,61 @@ def insViewlesson(id):
     )
 # Edit Lesson-------------------------------------------------------------------------------------------------------#
 
-import os
-import uuid
-
-from werkzeug.utils import secure_filename
-
-
-UPLOAD_FOLDER = os.path.join(
-    "static",
-    "uploads",
-    "lecciones"
-)
-
-EXTENSIONES_PERMITIDAS = {"pdf"}
-
-
-@profesor_bp.route("/crear_leccion/<int:curso_id>", methods=["GET", "POST"])
-def crear_leccion(curso_id):
+@profesor_bp.route("/editlesson/<int:id>", methods=["GET", "POST"])
+def editlesson(id):
 
     if "user_id" not in session:
         return redirect(url_for("login"))
 
+    usuario_id = session["user_id"]
+
     cursor = db.conexion.cursor(dictionary=True)
+
+    # ==========================================
+    # COMPROBAR QUE LA LECCIÓN EXISTE
+    # Y QUE PERTENECE AL PROFESOR
+    # ==========================================
+
+    cursor.execute("""
+        SELECT
+            l.*,
+            c.profesor_id
+        FROM lecciones l
+        INNER JOIN cursos c
+            ON l.curso_id = c.id
+        WHERE l.id = %s
+    """, (id,))
+
+    leccion = cursor.fetchone()
+
+    if not leccion:
+        cursor.close()
+        return "Lección no encontrada", 404
+
+    if leccion["profesor_id"] != usuario_id:
+        cursor.close()
+        return "No tienes permiso para editar esta lección", 403
 
     errores = []
 
     # ==========================================
-    # COMPROBAR QUE EL CURSO EXISTE
+    # OBTENER PDFs ACTUALES
     # ==========================================
 
     cursor.execute("""
-        SELECT *
-        FROM cursos
-        WHERE id = %s
-    """, (curso_id,))
+        SELECT
+            id,
+            leccion_id,
+            nombre,
+            ruta,
+            `orden`,
+            fechaSubida
+        FROM archivospdf
+        WHERE leccion_id = %s
+        ORDER BY `orden`, id
+    """, (id,))
 
-    curso = cursor.fetchone()
-
-    if not curso:
-        cursor.close()
-        return "Curso no encontrado", 404
+    archivos_pdf = cursor.fetchall()
 
     # ==========================================
     # POST
@@ -386,9 +692,15 @@ def crear_leccion(curso_id):
     if request.method == "POST":
 
         titulo = request.form.get("titulo", "").strip()
-        descripcion = request.form.get("descripcion", "").strip()
+        vista_previa = request.form.get(
+            "vistaPreviaCon",
+            ""
+        ).strip()
 
-        archivos = request.files.getlist("archivos")
+        contenido = request.form.get(
+            "contenido",
+            ""
+        ).strip()
 
         # ==========================================
         # VALIDAR TÍTULO
@@ -397,7 +709,7 @@ def crear_leccion(curso_id):
         if not titulo:
 
             errores.append(
-                "El título de la lección es obligatorio."
+                "El título es obligatorio."
             )
 
         elif len(titulo) < 3:
@@ -413,47 +725,82 @@ def crear_leccion(curso_id):
             )
 
         # ==========================================
-        # VALIDAR DESCRIPCIÓN
+        # VALIDAR VISTA PREVIA
         # ==========================================
 
-        if len(descripcion) > 2000:
+        if len(vista_previa) > 100:
 
             errores.append(
-                "La descripción no puede superar los 2000 caracteres."
+                "La vista previa no puede superar los 100 caracteres."
             )
 
         # ==========================================
-        # VALIDAR ARCHIVOS
+        # OBTENER ORDENES DE LOS PDFs EXISTENTES
         # ==========================================
 
-        archivos_validos = []
+        ordenes = {}
 
-        for archivo in archivos:
+        for archivo in archivos_pdf:
+
+            valor = request.form.get(
+                f"orden_{archivo['id']}",
+                ""
+            ).strip()
+
+            try:
+
+                orden = int(valor)
+
+                ordenes[archivo["id"]] = orden
+
+            except ValueError:
+
+                errores.append(
+                    f"El orden del archivo '{archivo['nombre']}' debe ser un número."
+                )
+
+        # ==========================================
+        # NUEVOS ARCHIVOS
+        # ==========================================
+
+        nuevos_archivos = request.files.getlist(
+            "archivos"
+        )
+
+        nuevos_archivos_validos = []
+
+        for archivo in nuevos_archivos:
 
             if not archivo or archivo.filename == "":
                 continue
 
-            nombre = secure_filename(archivo.filename)
+            nombre = secure_filename(
+                archivo.filename
+            )
 
             if "." not in nombre:
 
                 errores.append(
-                    f"El archivo {nombre} no tiene una extensión válida."
+                    f"El archivo '{nombre}' no tiene una extensión válida."
                 )
 
                 continue
 
-            extension = nombre.rsplit(".", 1)[1].lower()
+            extension = nombre.rsplit(
+                ".",
+                1
+            )[1].lower()
 
-            if extension not in EXTENSIONES_PERMITIDAS:
+            if extension != "pdf":
 
                 errores.append(
-                    f"El archivo {nombre} debe ser un PDF."
+                    f"El archivo '{nombre}' debe ser PDF."
                 )
 
                 continue
 
-            # Máximo 10 MB por PDF
+            # Máximo 10 MB
+
             archivo.seek(0, 2)
 
             tamaño = archivo.tell()
@@ -463,12 +810,98 @@ def crear_leccion(curso_id):
             if tamaño > 10 * 1024 * 1024:
 
                 errores.append(
-                    f"El archivo {nombre} supera el límite de 10 MB."
+                    f"El archivo '{nombre}' supera los 10 MB."
                 )
 
                 continue
 
-            archivos_validos.append(archivo)
+            nuevos_archivos_validos.append(
+                archivo
+            )
+
+        # ==========================================
+        # ARCHIVOS QUE SE VAN A ELIMINAR
+        # ==========================================
+
+        eliminados = request.form.getlist(
+            "eliminar_pdf"
+        )
+
+        eliminados_ids = []
+
+        for valor in eliminados:
+
+            try:
+                eliminados_ids.append(int(valor))
+            except ValueError:
+                pass
+
+        # ==========================================
+        # CALCULAR CANTIDAD FINAL DE ARCHIVOS
+        # ==========================================
+
+        archivos_actuales_finales = [
+            archivo
+            for archivo in archivos_pdf
+            if archivo["id"] not in eliminados_ids
+        ]
+
+        total_archivos = (
+            len(archivos_actuales_finales)
+            + len(nuevos_archivos_validos)
+        )
+
+        # ==========================================
+        # VALIDAR ORDEN
+        # ==========================================
+
+        ordenes_finales = []
+
+        for archivo in archivos_actuales_finales:
+
+            if archivo["id"] in ordenes:
+
+                ordenes_finales.append(
+                    ordenes[archivo["id"]]
+                )
+
+        # Los nuevos archivos recibirán órdenes
+        # consecutivas después de los existentes.
+
+        siguiente_orden = (
+            max(ordenes_finales)
+            + 1
+            if ordenes_finales
+            else 1
+        )
+
+        ordenes_nuevos = []
+
+        for archivo in nuevos_archivos_validos:
+
+            ordenes_nuevos.append(
+                siguiente_orden
+            )
+
+            siguiente_orden += 1
+
+        todos_los_ordenes = (
+            ordenes_finales
+            + ordenes_nuevos
+        )
+
+        # Deben ser exactamente:
+        # 1, 2, 3, ..., total_archivos
+
+        ordenes_esperados = list(
+            range(1, total_archivos + 1)
+        )
+
+        if sorted(todos_los_ordenes) != ordenes_esperados:
+
+            errores.append(
+                f"El orden de los archivos debe ser exactamente del 1 al {total_archivos}, sin repetir números."
+            )
 
         # ==========================================
         # SI HAY ERRORES
@@ -476,84 +909,126 @@ def crear_leccion(curso_id):
 
         if errores:
 
+            leccion["titulo"] = titulo
+            leccion["vistaPreviaCon"] = vista_previa
+            leccion["contenido"] = contenido
+
             cursor.close()
 
             return render_template(
-                "VisPROF/crear_leccion.html",
-                curso=curso,
+                "VisINSTRU/editar_lesson.html",
+                leccion=leccion,
+                archivos_pdf=archivos_pdf,
                 errores=errores
             )
 
         # ==========================================
-        # CREAR CARPETA
-        # ==========================================
-
-        os.makedirs(
-            UPLOAD_FOLDER,
-            exist_ok=True
-        )
-
-        # ==========================================
-        # CREAR LECCIÓN
+        # ACTUALIZAR LECCIÓN
         # ==========================================
 
         cursor.execute("""
-            INSERT INTO lecciones
-            (
-                curso_id,
-                titulo,
-                descripcion
-            )
-            VALUES
-            (
-                %s,
-                %s,
-                %s
-            )
+            UPDATE lecciones
+            SET titulo = %s,
+                vistaPreviaCon = %s,
+                contenido = %s
+            WHERE id = %s
         """, (
-            curso_id,
             titulo,
-            descripcion
+            vista_previa,
+            contenido,
+            id
         ))
 
-        leccion_id = cursor.lastrowid
-
         # ==========================================
-        # GUARDAR PDFs
+        # ELIMINAR PDFs
         # ==========================================
 
-        orden = 1
+        for archivo in archivos_pdf:
 
-        for archivo in archivos_validos:
+            if archivo["id"] not in eliminados_ids:
+                continue
+
+            # Eliminar archivo físico
+
+            ruta_fisica = os.path.join(
+                "static",
+                archivo["ruta"]
+            )
+
+            if os.path.exists(ruta_fisica):
+
+                os.remove(ruta_fisica)
+
+            # Eliminar registro
+
+            cursor.execute("""
+                DELETE FROM archivospdf
+                WHERE id = %s
+                  AND leccion_id = %s
+            """, (
+                archivo["id"],
+                id
+            ))
+
+        # ==========================================
+        # ACTUALIZAR ORDEN DE PDFs EXISTENTES
+        # ==========================================
+
+        for archivo in archivos_actuales_finales:
+
+            cursor.execute("""
+                UPDATE archivospdf
+                SET `orden` = %s
+                WHERE id = %s
+                  AND leccion_id = %s
+            """, (
+                ordenes[archivo["id"]],
+                archivo["id"],
+                id
+            ))
+
+        # ==========================================
+        # GUARDAR NUEVOS PDFs
+        # ==========================================
+
+        upload_folder = os.path.join(
+            "static",
+            "uploads",
+            "lecciones"
+        )
+
+        os.makedirs(
+            upload_folder,
+            exist_ok=True
+        )
+
+        for archivo, orden in zip(
+            nuevos_archivos_validos,
+            ordenes_nuevos
+        ):
 
             nombre_original = secure_filename(
                 archivo.filename
             )
 
-            extension = nombre_original.rsplit(
-                ".",
-                1
-            )[1].lower()
-
             nombre_unico = (
                 str(uuid.uuid4())
-                + "."
-                + extension
+                + ".pdf"
             )
 
             ruta_fisica = os.path.join(
-                UPLOAD_FOLDER,
+                upload_folder,
                 nombre_unico
             )
 
-            archivo.save(ruta_fisica)
+            archivo.save(
+                ruta_fisica
+            )
 
-            # Esta es la ruta que guardamos en MySQL
-            ruta_bd = os.path.join(
-                "uploads",
-                "lecciones",
-                nombre_unico
-            ).replace("\\", "/")
+            ruta_bd = (
+                "uploads/lecciones/"
+                + nombre_unico
+            )
 
             cursor.execute("""
                 INSERT INTO archivospdf
@@ -571,16 +1046,14 @@ def crear_leccion(curso_id):
                     %s
                 )
             """, (
-                leccion_id,
+                id,
                 nombre_original,
                 ruta_bd,
                 orden
             ))
 
-            orden += 1
-
         # ==========================================
-        # GUARDAR TODO
+        # GUARDAR CAMBIOS
         # ==========================================
 
         db.conexion.commit()
@@ -589,8 +1062,8 @@ def crear_leccion(curso_id):
 
         return redirect(
             url_for(
-                "view_lesson",
-                id=leccion_id
+                "profesor_bp.insViewlesson",
+                id=id
             )
         )
 
@@ -601,7 +1074,8 @@ def crear_leccion(curso_id):
     cursor.close()
 
     return render_template(
-        "VisPROF/crear_leccion.html",
-        curso=curso,
+        "VisINSTRU/editar_lesson.html",
+        leccion=leccion,
+        archivos_pdf=archivos_pdf,
         errores=[]
     )

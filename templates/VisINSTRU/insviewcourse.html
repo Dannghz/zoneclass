@@ -499,7 +499,7 @@
                         </div>
 
                         <div class="lesson-footer">
-                            <a href="/view_lesson/{{ lesson.id }}" target="_blank" class="btn-go-lesson">
+                            <a href="{{ url_for('profesor.insviewlesson', curso_id=curso.id) }}" target="_blank" class="btn-go-lesson">
                                 Ir a la lección
                                 <i class="bi bi-arrow-right-short fs-5"></i>
                             </a>

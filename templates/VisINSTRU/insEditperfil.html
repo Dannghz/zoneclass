@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Editar perfil</title>
+
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+        background: #f4f6f9;
+        color: #1f2937;
+        min-height: 100vh;
+      }
+
+      .contenedor {
+        width: 100%;
+        max-width: 900px;
+        margin: 40px auto;
+        padding: 20px;
+      }
+
+      .volver {
+        display: inline-block;
+        margin-bottom: 20px;
+        color: #4f46e5;
+        text-decoration: none;
+        font-weight: 600;
+      }
+
+      .volver:hover {
+        text-decoration: underline;
+      }
+
+      .card {
+        background: white;
+        border-radius: 20px;
+        padding: 35px;
+        box-shadow: 0 10px 35px rgba(0, 0, 0, 0.08);
+      }
+
+      .titulo {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      .titulo h1 {
+        font-size: 30px;
+        margin-bottom: 8px;
+        color: #111827;
+      }
+
+      .titulo p {
+        color: #6b7280;
+        font-size: 15px;
+      }
+
+      .foto-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 30px;
+      }
+
+      .foto-preview {
+        width: 130px;
+        height: 130px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 5px solid #eef2ff;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.12);
+        margin-bottom: 15px;
+      }
+
+      .foto-vacia {
+        width: 130px;
+        height: 130px;
+        border-radius: 50%;
+        background: #e5e7eb;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 45px;
+        color: #9ca3af;
+        margin-bottom: 15px;
+      }
+
+      .input-foto {
+        display: none;
+      }
+
+      .boton-foto {
+        cursor: pointer;
+        background: #eef2ff;
+        color: #4f46e5;
+        padding: 10px 18px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 14px;
+        transition: 0.2s;
+      }
+
+      .boton-foto:hover {
+        background: #e0e7ff;
+      }
+
+      .ayuda-foto {
+        margin-top: 8px;
+        color: #9ca3af;
+        font-size: 12px;
+      }
+
+      .formulario {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 22px;
+      }
+
+      .campo {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .campo-completo {
+        grid-column: 1 / -1;
+      }
+
+      label {
+        font-size: 14px;
+        font-weight: 700;
+        margin-bottom: 8px;
+        color: #374151;
+      }
+
+      input,
+      textarea {
+        width: 100%;
+        border: 1px solid #d1d5db;
+        border-radius: 11px;
+        padding: 13px 14px;
+        font-size: 15px;
+        outline: none;
+        transition: 0.2s;
+        background: #fff;
+      }
+
+      input:focus,
+      textarea:focus {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+      }
+
+      textarea {
+        resize: vertical;
+        min-height: 120px;
+        font-family: inherit;
+      }
+
+      .errores {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        color: #b91c1c;
+        padding: 15px 18px;
+        border-radius: 12px;
+        margin-bottom: 25px;
+      }
+
+      .errores ul {
+        padding-left: 20px;
+      }
+
+      .errores li {
+        margin: 5px 0;
+      }
+
+      .botones {
+        grid-column: 1 / -1;
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        margin-top: 10px;
+      }
+
+      .btn {
+        border: none;
+        padding: 13px 24px;
+        border-radius: 11px;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        text-decoration: none;
+        transition: 0.2s;
+      }
+
+      .btn-cancelar {
+        background: #f3f4f6;
+        color: #374151;
+      }
+
+      .btn-cancelar:hover {
+        background: #e5e7eb;
+      }
+
+      .btn-guardar {
+        background: #4f46e5;
+        color: white;
+      }
+
+      .btn-guardar:hover {
+        background: #4338ca;
+        transform: translateY(-1px);
+      }
+
+      .contador {
+        text-align: right;
+        color: #9ca3af;
+        font-size: 12px;
+        margin-top: 5px;
+      }
+
+      @media (max-width: 700px) {
+        .contenedor {
+          margin: 20px auto;
+          padding: 12px;
+        }
+
+        .card {
+          padding: 22px;
+          border-radius: 15px;
+        }
+
+        .formulario {
+          grid-template-columns: 1fr;
+        }
+
+        .campo-completo {
+          grid-column: auto;
+        }
+
+        .botones {
+          grid-column: auto;
+          flex-direction: column-reverse;
+        }
+
+        .btn {
+          width: 100%;
+          text-align: center;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="contenedor">
+      <a href="{{ url_for('profesor.instruprofile') }}" class="volver"> ← Volver al perfil </a>
+
+      <div class="card">
+        <div class="titulo">
+          <h1>Editar perfil</h1>
+          <p>Actualiza tu información personal e intereses.</p>
+        </div>
+
+        {% if errores %}
+
+        <div class="errores">
+          <ul>
+            {% for error in errores %}
+            <li>{{ error }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        {% endif %}
+
+        <form
+          action="{{ url_for('profesor.insEditprofile', id=user.id) }}"
+          method="POST"
+          enctype="multipart/form-data"
+          class="formulario"
+        >
+          <!-- FOTO -->
+
+          <div class="foto-container campo-completo">
+            {% if user.foto %}
+
+            <img
+              id="preview"
+              class="foto-preview"
+              src="{{ url_for('usuarios.mostrar_foto', id=user.id) }}"
+              alt="Foto de perfil"
+            />
+
+            {% else %}
+
+            <div id="foto-vacia" class="foto-vacia">👤</div>
+
+            <img
+              id="preview"
+              class="foto-preview"
+              style="display: none"
+              alt="Vista previa"
+            />
+
+            {% endif %}
+
+            <label for="foto" class="boton-foto"> Cambiar foto </label>
+
+            <input
+              type="file"
+              id="foto"
+              name="foto"
+              class="input-foto"
+              accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+            />
+
+            <span class="ayuda-foto"> JPG, PNG o WEBP. Máximo 5 MB. </span>
+          </div>
+
+          <!-- NOMBRE -->
+
+          <div class="campo">
+            <label for="nombre"> Nombre </label>
+
+            <input
+              type="text"
+              id="nombre"
+              name="nombre"
+              value="{{ user.nombre or '' }}"
+              maxlength="100"
+              required
+              autocomplete="name"
+            />
+          </div>
+
+          <!-- EDAD -->
+
+          <div class="campo">
+            <label for="edad"> Edad </label>
+
+            <input
+              type="number"
+              id="edad"
+              name="edad"
+              value="{{ user.edad or '' }}"
+              min="13"
+              max="100"
+              required
+            />
+          </div>
+
+          <!-- EMAIL -->
+
+          <div class="campo campo-completo">
+            <label for="email"> Correo electrónico </label>
+
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value="{{ user.email or '' }}"
+              maxlength="150"
+              required
+              autocomplete="email"
+            />
+          </div>
+
+          <!-- INTERESES -->
+
+          <div class="campo campo-completo">
+            <label for="intereses"> Mis intereses </label>
+
+            <textarea
+              id="intereses"
+              name="intereses"
+              maxlength="500"
+              required
+              placeholder="Cuéntanos qué temas, cursos o actividades te interesan..."
+            >
+{{ user.intereses or '' }}</textarea
+            >
+
+            <div class="contador"><span id="contador">0</span>/500</div>
+          </div>
+
+          <!-- BOTONES -->
+
+          <div class="botones">
+            <a href="{{ url_for('usuarios.profile') }}" class="btn btn-cancelar">
+              Cancelar
+            </a>
+
+            <button type="submit" class="btn btn-guardar">
+              Guardar cambios
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      // =========================
+      // PREVISUALIZACIÓN DE FOTO
+      // =========================
+
+      const inputFoto = document.getElementById("foto");
+      const preview = document.getElementById("preview");
+      const fotoVacia = document.getElementById("foto-vacia");
+
+      inputFoto.addEventListener("change", function () {
+        const archivo = this.files[0];
+
+        if (!archivo) {
+          return;
+        }
+
+        // Validación visual de tamaño
+        if (archivo.size > 5 * 1024 * 1024) {
+          alert("La imagen no puede superar los 5 MB.");
+          this.value = "";
+          return;
+        }
+
+        const tiposPermitidos = ["image/jpeg", "image/png", "image/webp"];
+
+        if (!tiposPermitidos.includes(archivo.type)) {
+          alert("Solo se permiten imágenes JPG, PNG o WEBP.");
+          this.value = "";
+          return;
+        }
+
+        const lector = new FileReader();
+
+        lector.onload = function (e) {
+          preview.src = e.target.result;
+          preview.style.display = "block";
+
+          if (fotoVacia) {
+            fotoVacia.style.display = "none";
+          }
+        };
+
+        lector.readAsDataURL(archivo);
+      });
+
+      // =========================
+      // CONTADOR DE INTERESES
+      // =========================
+
+      const intereses = document.getElementById("intereses");
+      const contador = document.getElementById("contador");
+
+      function actualizarContador() {
+        contador.textContent = intereses.value.length;
+      }
+
+      intereses.addEventListener("input", actualizarContador);
+
+      actualizarContador();
+    </script>
+  </body>
+</html>
