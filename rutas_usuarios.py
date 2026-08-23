@@ -28,65 +28,357 @@ def mostrar_foto(id):
         usuario["foto"],
         mimetype="image/jpeg"
     )
-    
+
+@usuarios_bp.route("/mi_foto")
+def mi_foto():
+
+    if "user_id" not in session:
+        return "", 401
+
+    usuario_id = session["user_id"]
+
+    cursor = db.conexion.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT foto
+        FROM usuarios
+        WHERE id = %s
+    """, (usuario_id,))
+
+    usuario = cursor.fetchone()
+
+    cursor.close()
+
+    if not usuario or not usuario["foto"]:
+        return "", 404
+
+    return Response(
+        usuario["foto"],
+        mimetype="image/jpeg"
+    )
+
+# Menu Usuarios-------------------------------------------------------------------------------------------------------#
+
 @usuarios_bp.route("/register", methods=["GET", "POST"])
 def register():
 
     if request.method == "POST":
 
-        nombre = request.form["nombre"]
-        edad = request.form["edad"]
-        email = request.form["email"]
-        contrasena = request.form["contrasena"]
-        intereses = request.form["intereses"]
-        rol = "USUARIO"  # Rol predeterminado para nuevos usuarios
-        fecha_registro = request.form["fecha_registro"]
+        nombre = request.form.get("nombre", "").strip()
+        edad = request.form.get("edad", "").strip()
+        email = request.form.get("email", "").strip().lower()
+        contrasena = request.form.get("contrasena", "")
+        intereses = request.form.get("intereses", "").strip()
 
-        error = None
+        rol = "USUARIO"
 
-        if len(nombre) < 3:
-            error = "Nombre muy corto"
+        errores = []
 
-        if not email or "@" not in email:
-            error = "Email inválido"
+        # ==========================================
+        # VALIDAR NOMBRE
+        # ==========================================
 
-        if len(contrasena) < 5:
-            error = "Contraseña muy corta"
-            
-        if intereses == None:
-            error = "Intereses no especificados"
+        if not nombre:
+            errores.append(
+                "El nombre es obligatorio."
+            )
 
-        fecha = datetime.strptime(fecha_registro, "%Y-%m-%d").date()
+        elif len(nombre) < 2:
+            errores.append(
+                "El nombre debe tener al menos 2 caracteres."
+            )
 
-        if fecha > date.today():
-            error = "No se permiten fechas futuras"
+        elif len(nombre) > 100:
+            errores.append(
+                "El nombre no puede superar los 100 caracteres."
+            )
 
-        if error:
-            return render_template("VisUSERT/register.html", error=error)
+        elif not re.match(
+            r"^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]+$",
+            nombre
+        ):
+            errores.append(
+                "El nombre solamente puede contener letras y espacios."
+            )
+
+        # ==========================================
+        # VALIDAR EDAD
+        # ==========================================
+
+        edad_numero = None
+
+        if not edad:
+            errores.append(
+                "La edad es obligatoria."
+            )
+
+        else:
+            try:
+
+                edad_numero = int(edad)
+
+                if edad_numero < 13 or edad_numero > 100:
+                    errores.append(
+                        "La edad debe estar entre 13 y 100 años."
+                    )
+
+            except ValueError:
+                errores.append(
+                    "La edad debe ser un número entero."
+                )
+
+        # ==========================================
+        # VALIDAR EMAIL
+        # ==========================================
+
+        if not email:
+
+            errores.append(
+                "El correo electrónico es obligatorio."
+            )
+
+        elif len(email) > 150:
+
+            errores.append(
+                "El correo electrónico es demasiado largo."
+            )
+
+        elif not re.match(
+            r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$",
+            email
+        ):
+
+            errores.append(
+                "Ingresa un correo electrónico válido."
+            )
+
+        # ==========================================
+        # COMPROBAR EMAIL EXISTENTE
+        # ==========================================
+
+        else:
+
+            cursor = db.conexion.cursor(dictionary=True)
+
+            cursor.execute("""
+                SELECT id
+                FROM usuarios
+                WHERE email = %s
+            """, (email,))
+
+            email_existente = cursor.fetchone()
+
+            cursor.close()
+
+            if email_existente:
+                errores.append(
+                    "Ese correo electrónico ya está registrado."
+                )
+
+        # ==========================================
+        # VALIDAR CONTRASEÑA
+        # ==========================================
+
+        if not contrasena:
+
+            errores.append(
+                "La contraseña es obligatoria."
+            )
+
+        elif len(contrasena) < 5:
+
+            errores.append(
+                "La contraseña debe tener al menos 5 caracteres."
+            )
+
+        # ==========================================
+        # VALIDAR INTERESES
+        # ==========================================
+
+        if not intereses:
+
+            errores.append(
+                "Debes indicar tus intereses."
+            )
+
+        elif len(intereses) < 3:
+
+            errores.append(
+                "Los intereses deben tener al menos 3 caracteres."
+            )
+
+        elif len(intereses) > 500:
+
+            errores.append(
+                "Los intereses no pueden superar los 500 caracteres."
+            )
+
+        # ==========================================
+        # VALIDAR FECHA DE REGISTRO
+        # ==========================================
+
+        
+
+        else:
+
+
+            foto = request.files.get("foto")
+
+            foto_blob = None
+
+        if foto and foto.filename != "":
+
+            extensiones_permitidas = {
+                "jpg",
+                "jpeg",
+                "png",
+                "webp"
+            }
+
+            nombre_archivo = foto.filename.lower()
+
+            if "." not in nombre_archivo:
+
+                errores.append(
+                    "La foto no tiene una extensión válida."
+                )
+
+            else:
+
+                extension = nombre_archivo.rsplit(
+                    ".",
+                    1
+                )[1]
+
+                if extension not in extensiones_permitidas:
+
+                    errores.append(
+                        "La foto debe ser JPG, JPEG, PNG o WEBP."
+                    )
+
+            # ==========================================
+            # MÁXIMO 5 MB
+            # ==========================================
+
+            foto.seek(0, 2)
+
+            tamaño = foto.tell()
+
+            foto.seek(0)
+
+            if tamaño > 5 * 1024 * 1024:
+
+                errores.append(
+                    "La foto no puede superar los 5 MB."
+                )
+
+            # ==========================================
+            # LEER FOTO SI NO TIENE ERRORES
+            # ==========================================
+
+            if not errores:
+
+                foto_blob = foto.read()
+
+        # ==========================================
+        # SI HAY ERRORES
+        # ==========================================
+
+        if errores:
+
+            user = {
+                "nombre": nombre,
+                "edad": edad,
+                "email": email,
+                "intereses": intereses
+            }
+
+            return render_template(
+                "VisUSERT/register.html",
+                user=user,
+                errores=errores
+            )
+
+        # ==========================================
+        # CREAR USUARIO
+        # ==========================================
 
         try:
 
             cursor = db.conexion.cursor()
 
-            cursor.execute(
-                """
-                INSERT INTO usuarios (nombre,edad,email,contrasena,rol,fecha_registro,intereses)
-                VALUES (%s,%s,%s,%s,%s,%s,%s)
-                """,
-                (nombre, edad, email, contrasena, rol, fecha_registro, intereses),
-            )
+            cursor.execute("""
+                INSERT INTO usuarios
+                (
+                    nombre,
+                    edad,
+                    email,
+                    contrasena,
+                    rol,
+                    intereses,
+                    foto
+                )
+                VALUES
+                (
+                    %s,
+                    %s,
+                    %s,
+                    %s,
+                    %s,
+                    %s,
+                    %s
+                )
+            """, (
+                nombre,
+                edad_numero,
+                email,
+                contrasena,
+                rol,
+                intereses,
+                foto_blob
+            ))
 
+            usuario_id = cursor.lastrowid
+            
             db.conexion.commit()
+
             cursor.close()
 
-            # 🔥 Redirige al login después de registrarse
-            return redirect(url_for("usuarios.menuUser"))
+            session["user_id"] = usuario_id
+            session["rol"] = rol
+
+            return redirect(
+                url_for("usuarios.menuUser")
+            )
 
         except Exception as e:
-            db.conexion.rollback()
-            return render_template("VisUSERT/register.html", error=str(e))
 
-    return render_template("VisUSERT/register.html")
+            db.conexion.rollback()
+
+            try:
+                cursor.close()
+            except:
+                pass
+
+            return render_template(
+                "VisUSERT/register.html",
+                user={
+                    "nombre": nombre,
+                    "edad": edad,
+                    "email": email,
+                    "intereses": intereses,
+                },
+                errores=[str(e)]
+            )
+
+    # ==========================================
+    # GET
+    # ==========================================
+
+    return render_template(
+        "VisUSERT/register.html",
+        errores=[]
+    )
 
 # Menu Usuarios-------------------------------------------------------------------------------------------------------#
 
@@ -128,7 +420,7 @@ def menuUser():
 # Perfil USERS-------------------------------------------------------------------------------------------------------#
 
 
-@usuarios_bp.route("/profile/")
+@usuarios_bp.route("/profile")
 def profile():
 
     if "user_id" not in session:
@@ -514,46 +806,52 @@ def view_course(curso_id):
     cursor = db.conexion.cursor(dictionary=True)
 
     # =====================================
-    # TRAER CURSO + NOMBRE DEL PROFESOR
+    # TRAER CURSO + PROFESOR
     # =====================================
-    cursor.execute(
-        """
-        SELECT 
+
+    cursor.execute("""
+        SELECT
             cursos.*,
-            usuarios.nombre AS profesor_nombre
-
+            usuarios.nombre AS profesor_nombre,
+            usuarios.foto AS profesor_foto
         FROM cursos
-
         INNER JOIN usuarios
-        ON usuarios.id = cursos.profesor_id
-
-        WHERE cursos.id=%s
-        """,
-        (curso_id,),
-    )
+            ON usuarios.id = cursos.profesor_id
+        WHERE cursos.id = %s
+    """, (curso_id,))
 
     curso = cursor.fetchone()
 
+    if not curso:
+        cursor.close()
+        return "Curso no encontrado", 404
+
     # =====================================
-    # TRAER LECCIONES DEL CURSO
+    # TRAER LECCIONES
     # =====================================
-    cursor.execute(
-        """
+
+    cursor.execute("""
         SELECT *
         FROM lecciones
-        WHERE curso_id=%s
-        """,
-        (curso_id,),
-    )
+        WHERE curso_id = %s
+        ORDER BY id ASC
+    """, (curso_id,))
 
     lecciones = cursor.fetchall()
 
     cursor.close()
 
+    # =====================================
+    # SABER SI EL USUARIO ESTÁ LOGUEADO
+    # =====================================
+
+    usuario_logueado = "user_id" in session
+
     return render_template(
         "VisUSERT/view_course.html",
         curso=curso,
         lecciones=lecciones,
+        usuario_logueado=usuario_logueado
     )
 
 #Vistalecciones ----------------------------------------------------------------------------------------------------------#
@@ -566,7 +864,6 @@ def view_lesson(id):
 
     cursor = db.conexion.cursor(dictionary=True)
 
-    # Obtener la información de la lección
     cursor.execute("""
         SELECT *
         FROM lecciones
@@ -576,15 +873,22 @@ def view_lesson(id):
     leccion = cursor.fetchone()
 
     if not leccion:
+
         cursor.close()
+
         return "Lección no encontrada", 404
 
-    # Obtener los archivos PDF de esa lección
     cursor.execute("""
-        SELECT *
+        SELECT
+            id,
+            leccion_id,
+            nombre,
+            ruta,
+            `orden`,
+            fechaSubida
         FROM archivospdf
         WHERE leccion_id = %s
-        ORDER BY id
+        ORDER BY `orden`, id
     """, (id,))
 
     archivos_pdf = cursor.fetchall()
@@ -596,5 +900,3 @@ def view_lesson(id):
         leccion=leccion,
         archivos_pdf=archivos_pdf
     )
-
-    

@@ -2,12 +2,36 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 import database as db
 from datetime import datetime, date 
 import os
+import re
 import uuid
 from werkzeug.utils import secure_filename
+from flask import current_app
 
 # 1. Creas el "pedazo" de aplicación (Blueprint)
 profesor_bp = Blueprint('profesor', __name__)
 
+@profesor_bp.route("/mostrar_foto/<int:id>")
+def mostrar_foto(id):
+
+    cursor = db.conexion.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT foto
+        FROM usuarios
+        WHERE id = %s
+    """, (id,))
+
+    usuario = cursor.fetchone()
+
+    cursor.close()
+
+    if not usuario or not usuario["foto"]:
+        return "", 404
+
+    return Response(
+        usuario["foto"],
+        mimetype="image/jpeg"
+    )
 # Menu Instructores-------------------------------------------------------------------------------------------------------#
 
 @profesor_bp.route("/menuInstru")
@@ -21,21 +45,7 @@ def menuInstru():
     cursor = db.conexion.cursor(dictionary=True)
 
     # 🔥 TODOS LOS CURSOS
-    cursor.execute("""
-    SELECT
-    cursos.*,
-    COUNT(DISTINCT lecciones.id) AS total_lecciones,
-    COUNT(DISTINCT inscripciones.usuario_id) AS total_estudiantes
-    FROM cursos
-    LEFT JOIN lecciones
-        ON cursos.id = lecciones.curso_id
-    LEFT JOIN inscripciones
-        ON cursos.id = inscripciones.curso_id
-    WHERE cursos.profesor_id = %s
-    GROUP BY cursos.id
-    """, (usuario_id,),)
-
-    profe = cursor.fetchall()
+    
     # 🔥 CURSOS INSCRITOS
     cursor.execute(
         """
@@ -56,7 +66,7 @@ def menuInstru():
 
     cursor.close()
     
-    return render_template("VisINSTRU/menuInstru.html", cursos=cursos, profe=profe)
+    return render_template("VisINSTRU/menuInstru.html", cursos=cursos)
 
 # Perfil USERS-------------------------------------------------------------------------------------------------------#
 
@@ -74,18 +84,26 @@ def instruprofile():
 
     # Datos del usuario
     cursor.execute("""
-        SELECT
-            usuarios.foto,
-            usuarios.nombre,
-            usuarios.edad,
-            usuarios.email,
-            usuarios.intereses,
-            COUNT(cursos.id) AS total_cursos
-        FROM usuarios
-        LEFT JOIN cursos ON usuarios.id = cursos.profesor_id
-        WHERE usuarios.id = %s
-        GROUP BY usuarios.id
-    """, (usuario_id,))
+    SELECT
+        usuarios.id,
+        usuarios.foto,
+        usuarios.nombre,
+        usuarios.edad,
+        usuarios.email,
+        usuarios.intereses,
+        COUNT(cursos.id) AS total_cursos
+    FROM usuarios
+    LEFT JOIN cursos
+        ON usuarios.id = cursos.profesor_id
+    WHERE usuarios.id = %s
+    GROUP BY
+        usuarios.id,
+        usuarios.foto,
+        usuarios.nombre,
+        usuarios.edad,
+        usuarios.email,
+        usuarios.intereses
+""", (usuario_id,))
 
     usuario = cursor.fetchone()
 
@@ -458,6 +476,36 @@ def insmiscursos():
     )
 
 #VistaCursos ----------------------------------------------------------------------------------------------------------#
+@profesor_bp.route("/CursosCreados")
+def cursosCreados():
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    usuario_id = session["user_id"]
+
+    cursor = db.conexion.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT
+        cursos.*,
+        COUNT(DISTINCT lecciones.id) AS total_lecciones
+        FROM cursos
+        LEFT JOIN lecciones
+            ON cursos.id = lecciones.curso_id
+        WHERE cursos.profesor_id = %s
+        GROUP BY cursos.id
+        """, (usuario_id,),)
+    
+    profe = cursor.fetchall()
+
+    cursor.close()
+
+    return render_template(
+        "VisINSTRU/cursosCreados.html",
+         profe=profe
+    )
+#VistaCursos ----------------------------------------------------------------------------------------------------------#
 @profesor_bp.route("/insviewcourse/<int:curso_id>")
 def insviewcourse(curso_id):
 
@@ -469,14 +517,15 @@ def insviewcourse(curso_id):
     cursor = db.conexion.cursor(dictionary=True)
 
     cursor.execute("""
-        SELECT
-            cursos.*,
-            usuarios.nombre AS profesor_nombre
-        FROM cursos
-        INNER JOIN usuarios
-            ON usuarios.id = cursos.profesor_id
-        WHERE cursos.id = %s
-    """, (curso_id,))
+    SELECT
+        cursos.*,
+        usuarios.nombre AS profesor_nombre,
+        usuarios.foto AS profesor_foto
+    FROM cursos
+    INNER JOIN usuarios
+        ON usuarios.id = cursos.profesor_id
+    WHERE cursos.id = %s
+""", (curso_id,))
 
     curso = cursor.fetchone()
 
@@ -502,7 +551,107 @@ def insviewcourse(curso_id):
         lecciones=lecciones,
         puede_editar=puede_editar
     )
-# ADMIN-------------------------------------------------------------------------------------------------------#
+
+# Crear Curso -------------------------------------------------------------------------------------------------------#
+
+@profesor_bp.route("/createcourse", methods=["GET", "POST"])
+def createcourse():
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    usuario_id = session["user_id"]
+    errores = []
+
+    # ==========================================
+    # POST
+    # ==========================================
+    if request.method == "POST":
+
+        titulo = request.form.get("titulo", "").strip()
+        descripcion = request.form.get("descripcion", "").strip()
+        contenido = request.form.get("contenido", "").strip()
+
+        # ==========================================
+        # VALIDACIONES (Exactamente las mismas)
+        # ==========================================
+        if not titulo:
+            errores.append("El título es obligatorio.")
+        elif len(titulo) < 3:
+            errores.append("El título debe tener al menos 3 caracteres.")
+        elif len(titulo) > 255:
+            errores.append("El título no puede superar los 255 caracteres.")
+
+        if not descripcion:
+            errores.append("La descripción es obligatoria.")
+        elif len(descripcion) < 10:
+            errores.append("La descripción debe tener al menos 10 caracteres.")
+        elif len(descripcion) > 1000:
+            errores.append("La descripción no puede superar los 1000 caracteres.")
+
+        if not contenido:
+            errores.append("El contenido es obligatorio.")
+        elif len(contenido) < 10:
+            errores.append("El contenido debe tener al menos 10 caracteres.")
+
+        # ==========================================
+        # SI HAY ERRORES
+        # ==========================================
+        if errores:
+            # Creamos un diccionario temporal para mantener los datos tipeados
+            curso_draft = {
+                "titulo": titulo,
+                "descripcion": descripcion,
+                "contenido": contenido
+            }
+
+            return render_template(
+                "VisINSTRU/crearcurso.html",
+                curso=curso_draft,
+                errores=errores
+            )
+
+        # ==========================================
+        # INSERTAR NUEVO CURSO
+        # ==========================================
+        cursor = db.conexion.cursor()
+
+        try:
+            cursor.execute("""
+                INSERT INTO cursos (titulo, descripcion, contenido, profesor_id)
+                VALUES (%s, %s, %s, %s)
+            """, (
+                titulo,
+                descripcion,
+                contenido,
+                usuario_id
+            ))
+
+            db.conexion.commit()
+            cursor.close()
+
+            return redirect(url_for("profesor.cursosCreados"))
+
+        except Exception as e:
+            db.conexion.rollback()
+            cursor.close()
+
+            return render_template(
+                "VisINSTRU/crearcurso.html",
+                curso={"titulo": titulo, "descripcion": descripcion, "contenido": contenido},
+                errores=[f"Error al guardar el curso: {e}"]
+            )
+
+    # ==========================================
+    # GET (Formulario Limpio)
+    # ==========================================
+    return render_template(
+        "VisINSTRU/crearcurso.html",
+        curso={},
+        errores=[]
+    )
+
+# Editar curso-------------------------------------------------------------------------------------------------------#
 
 @profesor_bp.route("/editcourse/<int:id>", methods=["GET", "POST"])
 def editcourse(id):
@@ -514,7 +663,11 @@ def editcourse(id):
 
     cursor = db.conexion.cursor(dictionary=True)
 
-    # Verificar que el curso pertenece al profesor
+    # ==========================================
+    # VERIFICAR QUE EL CURSO PERTENECE
+    # AL PROFESOR
+    # ==========================================
+
     cursor.execute("""
         SELECT *
         FROM cursos
@@ -528,41 +681,173 @@ def editcourse(id):
         cursor.close()
         return "No tienes permiso para editar este curso.", 403
 
+    errores = []
+
+    # ==========================================
+    # POST
+    # ==========================================
+
     if request.method == "POST":
 
-        titulo = request.form["titulo"]
-        descripcion = request.form["descripcion"]
-        contenido = request.form["contenido"]
-        fecha_creacion = request.form["fecha_creacion"]
+        titulo = request.form.get("titulo", "").strip()
+        descripcion = request.form.get("descripcion", "").strip()
+        contenido = request.form.get("contenido", "").strip()
+        
+
+        # ==========================================
+        # VALIDAR TÍTULO
+        # ==========================================
+
+        if not titulo:
+
+            errores.append(
+                "El título es obligatorio."
+            )
+
+        elif len(titulo) < 3:
+
+            errores.append(
+                "El título debe tener al menos 3 caracteres."
+            )
+
+        elif len(titulo) > 255:
+
+            errores.append(
+                "El título no puede superar los 255 caracteres."
+            )
+
+        # ==========================================
+        # VALIDAR DESCRIPCIÓN
+        # ==========================================
+
+        if not descripcion:
+
+            errores.append(
+                "La descripción es obligatoria."
+            )
+
+        elif len(descripcion) < 10:
+
+            errores.append(
+                "La descripción debe tener al menos 10 caracteres."
+            )
+
+        elif len(descripcion) > 1000:
+
+            errores.append(
+                "La descripción no puede superar los 1000 caracteres."
+            )
+
+        # ==========================================
+        # VALIDAR CONTENIDO
+        # ==========================================
+
+        if not contenido:
+
+            errores.append(
+                "El contenido es obligatorio."
+            )
+
+        elif len(contenido) < 10:
+
+            errores.append(
+                "El contenido debe tener al menos 10 caracteres."
+            )
+
+        # ==========================================
+        # VALIDAR FECHA
+        # ==========================================
+
+        
+
+        # ==========================================
+        # SI HAY ERRORES
+        # ==========================================
+
+        if errores:
+
+            # Mantener lo que escribió el profesor
+
+            curso["titulo"] = titulo
+            curso["descripcion"] = descripcion
+            curso["contenido"] = contenido
+
+            cursor.close()
+
+            return render_template(
+                "VisINSTRU/editarCurse.html",
+                curso=curso,
+                errores=errores
+            )
+
+        # ==========================================
+        # ACTUALIZAR CURSO
+        # ==========================================
 
         try:
 
             cursor.execute("""
                 UPDATE cursos
-                SET titulo = %s,
+                SET
+                    titulo = %s,
                     descripcion = %s,
-                    contenido = %s,
-                    fecha_creacion = %s
+                    contenido = %s
                 WHERE id = %s
-            """, (titulo, descripcion, contenido, fecha_creacion, id))
+                AND profesor_id = %s
+            """, (
+                titulo,
+                descripcion,
+                contenido,
+                id,
+                usuario_id
+            ))
 
             db.conexion.commit()
 
             cursor.close()
 
-            return redirect(url_for("profesor.insviewcourse", curso_id=id))
+            return redirect(
+                url_for(
+                    "profesor.insviewcourse",
+                    curso_id=id
+                )
+            )
 
         except Exception as e:
 
             db.conexion.rollback()
-
             cursor.close()
 
-            return f"Error: {e}"
+            return render_template(
+                "VisINSTRU/editarCurse.html",
+                curso=curso,
+                errores=[
+                    f"Error al actualizar el curso: {e}"
+                ]
+            )
+
+    # ==========================================
+    # GET
+    # ==========================================
 
     cursor.close()
 
-    return render_template("VisINSTRU/editarCurse.html", curso=curso)
+    return render_template(
+        "VisINSTRU/editarCurse.html",
+        curso=curso,
+        errores=[]
+    )
+
+# ViewLesson-------------------------------------------------------------------------------------------------------#
+
+@profesor_bp.route("/deleteCUR/<int:id>", methods=["POST"])
+def deleteCUR(id):
+    cursor = db.conexion.cursor()
+    sql = "DELETE FROM cursos WHERE id = %s"
+    data = (id,)
+    cursor.execute(sql, data)
+    db.conexion.commit()
+    return redirect(url_for("profesor.menuInstru"))
 
 # ViewLesson-------------------------------------------------------------------------------------------------------#
 @profesor_bp.route("/insViewlesson/<int:id>")
@@ -575,34 +860,38 @@ def insViewlesson(id):
 
     cursor = db.conexion.cursor(dictionary=True)
 
-    cursor.execute("""
-        SELECT c.profesor_id 
-    FROM lecciones l
-    INNER JOIN cursos c ON l.curso_id = c.id
-    WHERE l.id = %s """, (id,))
-
-    resultado = cursor.fetchone()
-
-    puede_editar = resultado["profesor_id"] == usuario_id
+    # ==========================================
+    # OBTENER LA LECCIÓN Y EL PROFESOR
+    # ==========================================
 
     cursor.execute("""
-        SELECT curso_id,
-        profesor_id
-        FROM cursos """)
-
-    cursor.execute("""
-        SELECT *
-        FROM lecciones
-        WHERE id = %s
+        SELECT
+            l.*,
+            c.profesor_id
+        FROM lecciones l
+        INNER JOIN cursos c
+            ON l.curso_id = c.id
+        WHERE l.id = %s
     """, (id,))
 
     leccion = cursor.fetchone()
 
+    # Primero comprobamos que la lección exista
     if not leccion:
-
         cursor.close()
-
         return "Lección no encontrada", 404
+
+    # ==========================================
+    # COMPROBAR SI ES EL PROFESOR
+    # ==========================================
+
+    puede_editar = (
+        leccion["profesor_id"] == usuario_id
+    )
+
+    # ==========================================
+    # OBTENER LOS PDFs
+    # ==========================================
 
     cursor.execute("""
         SELECT
@@ -627,6 +916,7 @@ def insViewlesson(id):
         archivos_pdf=archivos_pdf,
         puede_editar=puede_editar
     )
+    
 # Edit Lesson-------------------------------------------------------------------------------------------------------#
 
 @profesor_bp.route("/editlesson/<int:id>", methods=["GET", "POST"])
@@ -991,16 +1281,16 @@ def editlesson(id):
         # GUARDAR NUEVOS PDFs
         # ==========================================
 
+        nombre_unico = f"{uuid.uuid4()}.pdf"
+
         upload_folder = os.path.join(
+            current_app.root_path,
             "static",
             "uploads",
             "lecciones"
         )
 
-        os.makedirs(
-            upload_folder,
-            exist_ok=True
-        )
+        os.makedirs(upload_folder, exist_ok=True)
 
         for archivo, orden in zip(
             nuevos_archivos_validos,
@@ -1062,7 +1352,7 @@ def editlesson(id):
 
         return redirect(
             url_for(
-                "profesor_bp.insViewlesson",
+                "profesor.insViewlesson",
                 id=id
             )
         )
@@ -1079,3 +1369,394 @@ def editlesson(id):
         archivos_pdf=archivos_pdf,
         errores=[]
     )
+
+# Edit Lesson-------------------------------------------------------------------------------------------------------#
+
+@profesor_bp.route("/newlesson/<int:curso_id>", methods=["GET", "POST"])
+def newlesson(curso_id):
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    usuario_id = session["user_id"]
+
+    cursor = db.conexion.cursor(dictionary=True)
+
+    errores = []
+
+    # ==========================================
+    # COMPROBAR QUE EL CURSO EXISTE
+    # Y QUE PERTENECE AL PROFESOR
+    # ==========================================
+
+    cursor.execute("""
+        SELECT
+            id,
+            profesor_id
+        FROM cursos
+        WHERE id = %s
+    """, (curso_id,))
+
+    curso = cursor.fetchone()
+
+    if not curso:
+        cursor.close()
+        return "Curso no encontrado", 404
+
+    if curso["profesor_id"] != usuario_id:
+        cursor.close()
+        return "No tienes permiso para crear una lección en este curso", 403
+
+    # ==========================================
+    # POST
+    # ==========================================
+
+    if request.method == "POST":
+
+        titulo = request.form.get(
+            "titulo",
+            ""
+        ).strip()
+
+        vista_previa = request.form.get(
+            "vistaPreviaCon",
+            ""
+        ).strip()
+
+        contenido = request.form.get(
+            "contenido",
+            ""
+        ).strip()
+
+        # ==========================================
+        # VALIDAR TÍTULO
+        # ==========================================
+
+        if not titulo:
+            errores.append(
+                "El título es obligatorio."
+            )
+
+        elif len(titulo) < 3:
+            errores.append(
+                "El título debe tener al menos 3 caracteres."
+            )
+
+        elif len(titulo) > 255:
+            errores.append(
+                "El título no puede superar los 255 caracteres."
+            )
+
+        # ==========================================
+        # VALIDAR VISTA PREVIA
+        # ==========================================
+
+        if len(vista_previa) > 100:
+            errores.append(
+                "La vista previa no puede superar los 100 caracteres."
+            )
+
+        # ==========================================
+        # VALIDAR CONTENIDO
+        # ==========================================
+
+        if not contenido:
+            errores.append(
+                "El contenido es obligatorio."
+            )
+
+        # ==========================================
+        # NUEVOS ARCHIVOS PDF
+        # ==========================================
+
+        nuevos_archivos = request.files.getlist(
+            "archivos"
+        )
+
+        nuevos_archivos_validos = []
+
+        for archivo in nuevos_archivos:
+
+            if not archivo or archivo.filename == "":
+                continue
+
+            nombre = secure_filename(
+                archivo.filename
+            )
+
+            if "." not in nombre:
+                errores.append(
+                    f"El archivo '{nombre}' no tiene una extensión válida."
+                )
+                continue
+
+            extension = nombre.rsplit(
+                ".",
+                1
+            )[1].lower()
+
+            if extension != "pdf":
+                errores.append(
+                    f"El archivo '{nombre}' debe ser PDF."
+                )
+                continue
+
+            # Máximo 10 MB
+            archivo.seek(0, 2)
+            tamaño = archivo.tell()
+            archivo.seek(0)
+
+            if tamaño > 10 * 1024 * 1024:
+                errores.append(
+                    f"El archivo '{nombre}' supera los 10 MB."
+                )
+                continue
+
+            nuevos_archivos_validos.append(
+                archivo
+            )
+
+        # ==========================================
+        # SI HAY ERRORES
+        # ==========================================
+
+        if errores:
+
+            leccion = {
+                "id": None,
+                "curso_id": curso_id,
+                "titulo": titulo,
+                "vistaPreviaCon": vista_previa,
+                "contenido": contenido
+            }
+
+            cursor.close()
+
+            return render_template(
+                "VisINSTRU/editar_lesson.html",
+                leccion=leccion,
+                archivos_pdf=[],
+                errores=errores,
+                curso_id=curso_id,
+                creando=True
+            )
+
+        # ==========================================
+        # CREAR LECCIÓN
+        # ==========================================
+
+        cursor.execute("""
+            INSERT INTO lecciones
+            (
+                curso_id,
+                titulo,
+                vistaPreviaCon,
+                contenido
+            )
+            VALUES
+            (
+                %s,
+                %s,
+                %s,
+                %s
+            )
+        """, (
+            curso_id,
+            titulo,
+            vista_previa,
+            contenido
+        ))
+
+        # ==========================================
+        # OBTENER ID DE LA LECCIÓN CREADA
+        # ==========================================
+
+        leccion_id = cursor.lastrowid
+
+        # ==========================================
+        # PREPARAR CARPETA DE PDFs
+        # ==========================================
+
+        upload_folder = os.path.join(
+            current_app.root_path,
+            "static",
+            "uploads",
+            "lecciones"
+        )
+
+        os.makedirs(
+            upload_folder,
+            exist_ok=True
+        )
+
+        # ==========================================
+        # GUARDAR PDFs
+        # ==========================================
+
+        for orden, archivo in enumerate(
+            nuevos_archivos_validos,
+            start=1
+        ):
+
+            nombre_original = secure_filename(
+                archivo.filename
+            )
+
+            nombre_unico = (
+                str(uuid.uuid4())
+                + ".pdf"
+            )
+
+            ruta_fisica = os.path.join(
+                upload_folder,
+                nombre_unico
+            )
+
+            archivo.save(
+                ruta_fisica
+            )
+
+            ruta_bd = (
+                "uploads/lecciones/"
+                + nombre_unico
+            )
+
+            cursor.execute("""
+                INSERT INTO archivospdf
+                (
+                    leccion_id,
+                    nombre,
+                    ruta,
+                    `orden`
+                )
+                VALUES
+                (
+                    %s,
+                    %s,
+                    %s,
+                    %s
+                )
+            """, (
+                leccion_id,
+                nombre_original,
+                ruta_bd,
+                orden
+            ))
+
+        # ==========================================
+        # GUARDAR TODO
+        # ==========================================
+
+        db.conexion.commit()
+
+        cursor.close()
+
+        # ==========================================
+        # IR A LA LECCIÓN CREADA
+        # ==========================================
+
+        return redirect(
+            url_for(
+                "profesor.insViewlesson",
+                id=leccion_id
+            )
+        )
+
+    # ==========================================
+    # GET
+    # ==========================================
+
+    leccion = {
+        "id": None,
+        "curso_id": curso_id,
+        "titulo": "",
+        "vistaPreviaCon": "",
+        "contenido": ""
+    }
+
+    cursor.close()
+
+    return render_template(
+        "VisINSTRU/editar_lesson.html",
+        leccion=leccion,
+        archivos_pdf=[],
+        errores=[],
+        curso_id=curso_id,
+        creando=True
+    )
+
+# Edit Lesson-------------------------------------------------------------------------------------------------------#
+
+@profesor_bp.route("/delete_lesson/<int:id>", methods=["POST"])
+def delete_lesson(id):
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    usuario_id = session["user_id"]
+
+    cursor = db.conexion.cursor(dictionary=True)
+
+    # Obtener curso y comprobar propietario
+    cursor.execute("""
+        SELECT
+            l.curso_id,
+            c.profesor_id
+        FROM lecciones l
+        INNER JOIN cursos c
+            ON l.curso_id = c.id
+        WHERE l.id = %s
+    """, (id,))
+
+    resultado = cursor.fetchone()
+
+    if not resultado:
+        cursor.close()
+        return "Lección no encontrada", 404
+
+    if resultado["profesor_id"] != usuario_id:
+        cursor.close()
+        return "No tienes permiso para eliminar esta lección", 403
+
+    curso_id = resultado["curso_id"]
+
+    # Eliminar archivos físicos asociados
+    cursor.execute("""
+        SELECT ruta
+        FROM archivospdf
+        WHERE leccion_id = %s
+    """, (id,))
+
+    archivos = cursor.fetchall()
+
+    for archivo in archivos:
+
+        ruta_fisica = os.path.join(
+            current_app.root_path,
+            "static",
+            archivo["ruta"]
+        )
+
+        if os.path.exists(ruta_fisica):
+            os.remove(ruta_fisica)
+
+    # Eliminar registros de PDFs
+    cursor.execute("""
+        DELETE FROM archivospdf
+        WHERE leccion_id = %s
+    """, (id,))
+
+    # Eliminar lección
+    cursor.execute("""
+        DELETE FROM lecciones
+        WHERE id = %s
+    """, (id,))
+
+    db.conexion.commit()
+    cursor.close()
+
+    # Ahora usamos el curso_id que obtuvimos antes
+    return redirect(url_for(
+        "profesor.insviewcourse",
+        curso_id=curso_id
+    ))

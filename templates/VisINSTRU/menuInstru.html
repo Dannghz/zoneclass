@@ -384,17 +384,173 @@
                 flex-direction: column;
                 text-align: center;
             }
+
             .hero-image-placeholder {
                 width: 100%;
                 max-width: 400px;
             }
+
             .info-banner-card {
                 flex-direction: column-reverse;
                 text-align: center;
             }
+
             .info-banner-header {
                 justify-content: center;
             }
+        }
+
+        /* APOYO AL PROYECTO */
+
+        .support-section {
+            padding: 20px 20px 75px;
+            background: #f4f0ff;
+        }
+
+        .support-card {
+            max-width: 950px;
+            margin: auto;
+            padding: 40px;
+            background: white;
+            border: 1px solid #e9d5ff;
+            border-radius: 24px;
+            text-align: center;
+            box-shadow: 0 12px 35px rgba(124, 92, 219, .09);
+        }
+
+        .support-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 15px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #f3e8ff, #e9d5ff);
+            color: #7c5cdb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .support-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 20px;
+            background: #faf5ff;
+            color: #7c3aed;
+            font-size: .75rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .support-card h2 {
+            color: #2e1065;
+            font-size: 1.7rem;
+            font-weight: 900;
+            margin-bottom: 12px;
+        }
+
+        .support-card>p {
+            max-width: 700px;
+            margin: 0 auto 30px;
+            color: #6b7280;
+            line-height: 1.7;
+        }
+
+        .support-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .support-option {
+            padding: 25px;
+            border: 1px solid #ede9fe;
+            border-radius: 18px;
+            background: #fcfbff;
+            transition: .3s ease;
+        }
+
+        .support-option:hover {
+            transform: translateY(-5px);
+            border-color: #c084fc;
+            box-shadow: 0 10px 25px rgba(124, 92, 219, .10);
+        }
+
+        .option-icon {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 13px;
+            border-radius: 14px;
+            background: #f3e8ff;
+            color: #7c5cdb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .support-option h3 {
+            color: #30224a;
+            font-size: 1.1rem;
+            font-weight: 800;
+            margin-bottom: 9px;
+        }
+
+        .support-option p {
+            color: #737783;
+            font-size: .87rem;
+            line-height: 1.6;
+            min-height: 65px;
+        }
+
+        .support-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 18px;
+            border-radius: 11px;
+            background: linear-gradient(135deg, #7c5cdb, #9333ea);
+            color: white;
+            text-decoration: none;
+            font-size: .88rem;
+            font-weight: 700;
+            transition: .3s;
+        }
+
+        .support-btn:hover {
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 18px rgba(124, 92, 219, .25);
+        }
+
+        .support-thanks {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #ede9fe;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: #7c5cdb;
+            font-size: .85rem;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+
+            .support-card {
+                padding: 28px 20px;
+            }
+
+            .support-options {
+                grid-template-columns: 1fr;
+            }
+
+            .support-option p {
+                min-height: auto;
+            }
+
         }
     </style>
 </head>
@@ -418,13 +574,19 @@
                 </a>
             </li>
             <li>
+                <a href="/CursosCreados" class="nav-link-btn">
+                    <i class="bi bi-journal-bookmark-fill"></i>
+                    Cursos Creados
+                </a>
+            </li>
+            <li>
                 <a href="/instruprofile" class="nav-link-btn">
                     <i class="bi bi-person-circle"></i>
                     Perfil
                 </a>
             </li>
             <li>
-                <a href="{{url_for('logout')}}" class="nav-link-btn btn-logout" >
+                <a href="{{url_for('logout')}}" class="nav-link-btn btn-logout">
                     <i class="bi bi-box-arrow-right"></i>
                     Cerrar Sesión
                 </a>
@@ -441,7 +603,8 @@
                 <span class="hero-subtitle">Plataforma Educativa Virtual</span>
                 <h1 class="hero-title">ONLINE <span>EDUCATION</span></h1>
                 <p class="hero-description">
-                    Explora contenidos estructurados, lecciones dinámicas y lleva el control completo de tu aprendizaje desde un solo lugar. Transforma tu futuro académico con Zoneclass.
+                    Explora contenidos estructurados, lecciones dinámicas y lleva el control completo de tu aprendizaje
+                    desde un solo lugar. Transforma tu futuro académico con Zoneclass.
                 </p>
             </div>
 
@@ -456,14 +619,16 @@
        ========================================================================== -->
     <section class="transition-divider">
         <div class="info-banner-card">
-            
+
             <div class="info-banner-text">
                 <div class="info-banner-header">
                     <div class="logo-badge">Z</div>
                     <h3>Acerca de Zoneclass</h3>
                 </div>
                 <p>
-                    Nuestra plataforma está concebida para ofrecerte una experiencia fluida, intuitiva y accesible. Accede a tus cursos en cualquier momento, realiza un seguimiento en tiempo real de tus avances y conecta con docentes calificados.
+                    Nuestra plataforma está concebida para ofrecerte una experiencia fluida, intuitiva y accesible.
+                    Accede a tus cursos en cualquier momento, realiza un seguimiento en tiempo real de tus avances y
+                    conecta con docentes calificados.
                 </p>
             </div>
 
@@ -477,8 +642,8 @@
                     <!-- Laptop Screen -->
                     <rect x="53" y="75" width="39" height="28" rx="4" fill="#7c5cdb" />
                     <rect x="56" y="78" width="33" height="22" rx="2" fill="#ffffff" />
-                    <line x1="60" y1="84" x2="75" y2="84" stroke="#c084fc" stroke-width="2" stroke-linecap="round"/>
-                    <line x1="60" y1="90" x2="82" y2="90" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round"/>
+                    <line x1="60" y1="84" x2="75" y2="84" stroke="#c084fc" stroke-width="2" stroke-linecap="round" />
+                    <line x1="60" y1="90" x2="82" y2="90" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" />
                     <!-- Apilamiento de Libros -->
                     <rect x="110" y="102" width="40" height="10" rx="3" fill="#8b5cf6" />
                     <rect x="114" y="92" width="36" height="9" rx="3" fill="#c084fc" />
@@ -496,52 +661,7 @@
         </div>
     </section>
 
-    <section class="courses-section">
 
-        <div class="section-header-custom">
-            <h2 class="section-title-custom">Mis Cursos creados</h2>
-            <div class="section-line-custom"></div>
-        </div>
-
-        <div class="courses-grid-custom">
-            {% for profes in profe %}
-            <a href="/insviewcourse/{{ profes.id }}" class="course-card-link">
-                <div class="course-card-custom">
-                    
-                    <div class="course-card-body">
-                        <span class="course-badge">Disponible</span>
-                        
-                        <h3 class="course-title-custom">
-                            {{ profes.titulo }}
-                        </h3>
-
-                        <p class="course-desc-custom">
-                            {% if profes.descripcion|length > 140 %}
-                                {{ profes.descripcion[:140] }}...
-                            {% else %}
-                                {{ profes.descripcion }}
-                            {% endif %}
-                        </p>
-                    </div>
-
-                    <div class="course-card-footer">
-                        <div class="metric-pill">
-                            <i class="bi bi-journal-text"></i>
-                            <span>{{ profes.total_lecciones }} Lecciones</span>
-                        </div>
-
-                        <div class="metric-pill">
-                            <i class="bi bi-people-fill"></i>
-                            <span>{{ profes.total_estudiantes }} Alumnos</span>
-                        </div>
-                    </div>
-
-                </div>
-            </a>
-            {% endfor %}
-        </div>
-
-    </section>
     <!-- ==========================================================================
        4. SECCIÓN DE CURSOS DISPONIBLES
        ========================================================================== -->
@@ -554,21 +674,21 @@
 
         <div class="courses-grid-custom">
             {% for curso in cursos %}
-            <a href="/view_course/{{ curso.id }}" class="course-card-link">
+            <a href="/insviewcourse/{{ curso.id }}" class="course-card-link">
                 <div class="course-card-custom">
-                    
+
                     <div class="course-card-body">
                         <span class="course-badge">Disponible</span>
-                        
+
                         <h3 class="course-title-custom">
                             {{ curso.titulo }}
                         </h3>
 
                         <p class="course-desc-custom">
                             {% if curso.descripcion|length > 140 %}
-                                {{ curso.descripcion[:140] }}...
+                            {{ curso.descripcion[:140] }}...
                             {% else %}
-                                {{ curso.descripcion }}
+                            {{ curso.descripcion }}
                             {% endif %}
                         </p>
                     </div>
@@ -592,6 +712,92 @@
 
     </section>
 
+    <!-- APOYO AL PROYECTO -->
+    <section class="support-section">
+
+        <div class="support-card">
+
+            <div class="support-icon">
+                <i class="bi bi-heart-fill"></i>
+            </div>
+
+            <span class="support-badge">
+                Comunidad ZoneClass
+            </span>
+
+            <h2>
+                ¿Quieres apoyar a ZoneClass?
+            </h2>
+
+            <p>
+                Este proyecto busca crear un espacio educativo donde el
+                conocimiento pueda ser compartido con otras personas.
+                Puedes contribuir de dos maneras: apoyando económicamente
+                el proyecto o compartiendo tus conocimientos como profesor.
+            </p>
+
+            <div class="support-options">
+
+                <!-- APOYO ECONÓMICO -->
+                <div class="support-option">
+
+                    <div class="option-icon">
+                        <i class="bi bi-cash-coin"></i>
+                    </div>
+
+                    <h3>
+                        Apoyo económico
+                    </h3>
+
+                    <p>
+                        Tu aporte puede ayudar al mantenimiento, desarrollo
+                        y crecimiento de ZoneClass.
+                    </p>
+
+                    <a href="/economico" class="support-btn">
+                        <i class="bi bi-heart me-2"></i>
+                        Apoyar proyecto
+                    </a>
+
+                </div>
+
+                <!-- APOYO CON CONOCIMIENTOS -->
+                <div class="support-option">
+
+                    <div class="option-icon">
+                        <i class="bi bi-mortarboard-fill"></i>
+                    </div>
+
+                    <h3>
+                        Compartir conocimientos
+                    </h3>
+
+                    <p>
+                        Si tienes conocimientos que deseas compartir,
+                        puedes solicitar ser profesor de ZoneClass.
+                    </p>
+
+                    <a href="/colaboracion" class="support-btn">
+                        <i class="bi bi-person-plus-fill me-2"></i>
+                        Quiero enseñar
+                    </a>
+
+                </div>
+
+            </div>
+
+            <div class="support-thanks">
+                <i class="bi bi-stars"></i>
+                <span>
+                    Gracias por contribuir a que el aprendizaje sea accesible
+                    para más personas.
+                </span>
+            </div>
+
+        </div>
+
+    </section>
+
     <!-- ==========================================================================
        5. JAVASCRIPT
        ========================================================================== -->
@@ -604,4 +810,5 @@
         }
     </script>
 </body>
+
 </html>

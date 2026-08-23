@@ -2,112 +2,226 @@
 <html lang="es">
 
 <head>
-
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
-    <title>Editar lección</title>
+    <title>Crear lección</title>
 
     <style>
 
         * {
             box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
         body {
-            margin: 0;
-            font-family: Arial, sans-serif;
+            font-family: Arial, Helvetica, sans-serif;
             background: #f4f6f9;
             color: #1f2937;
+            min-height: 100vh;
         }
 
         .contenedor {
-            max-width: 950px;
+            width: 100%;
+            max-width: 850px;
             margin: 40px auto;
             padding: 20px;
         }
 
+        .volver {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #4f46e5;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .volver:hover {
+            text-decoration: underline;
+        }
+
         .card {
             background: white;
-            border-radius: 18px;
-            padding: 30px;
-            box-shadow: 0 8px 30px rgba(0,0,0,.08);
+            border-radius: 20px;
+            padding: 35px;
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.08);
         }
 
-        h1 {
-            margin-top: 0;
-        }
-
-        .subtitulo {
-            color: #6b7280;
+        .encabezado {
             margin-bottom: 30px;
         }
 
-        .campo {
-            margin-bottom: 22px;
-        }
-
-        label {
-            display: block;
-            font-weight: bold;
+        .encabezado h1 {
+            font-size: 30px;
+            color: #111827;
             margin-bottom: 8px;
         }
 
-        input[type="text"],
-        textarea {
-            width: 100%;
-            padding: 13px;
-            border: 1px solid #d1d5db;
-            border-radius: 10px;
-            font-size: 15px;
-            font-family: inherit;
+        .encabezado p {
+            color: #6b7280;
+            line-height: 1.6;
         }
 
-        textarea {
-            min-height: 150px;
-            resize: vertical;
+        .curso {
+            background: #eef2ff;
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 25px;
+            color: #3730a3;
         }
 
-        input:focus,
-        textarea:focus {
-            outline: none;
-            border-color: #6366f1;
+        .curso strong {
+            color: #312e81;
         }
 
         .errores {
             background: #fef2f2;
             border: 1px solid #fecaca;
-            color: #991b1b;
-            padding: 15px;
-            border-radius: 10px;
+            color: #b91c1c;
+            border-radius: 12px;
+            padding: 15px 18px;
             margin-bottom: 25px;
         }
 
+        .errores ul {
+            padding-left: 20px;
+        }
+
         .errores li {
-            margin-bottom: 5px;
+            margin: 5px 0;
         }
 
-        .seccion {
-            margin-top: 30px;
+        .campo {
+            margin-bottom: 23px;
         }
 
-        .seccion h2 {
-            font-size: 20px;
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 700;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .obligatorio {
+            color: #dc2626;
+        }
+
+        input[type="text"],
+        textarea {
+            width: 100%;
+            border: 1px solid #d1d5db;
+            border-radius: 11px;
+            padding: 13px 14px;
+            font-size: 15px;
+            outline: none;
+            transition: 0.2s;
+            font-family: inherit;
+        }
+
+        input[type="text"]:focus,
+        textarea:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+        }
+
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+            line-height: 1.5;
+        }
+
+        .contador {
+            text-align: right;
+            margin-top: 5px;
+            font-size: 12px;
+            color: #9ca3af;
+        }
+
+        /* =========================
+           ZONA DE ARCHIVOS
+        ========================= */
+
+        .zona-archivo {
+            border: 2px dashed #c7d2fe;
+            background: #f8faff;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            transition: 0.2s;
+        }
+
+        .zona-archivo:hover {
+            border-color: #6366f1;
+            background: #f5f5ff;
+        }
+
+        .icono-pdf {
+            font-size: 45px;
+            margin-bottom: 10px;
+        }
+
+        .zona-archivo h3 {
+            margin-bottom: 7px;
+            color: #374151;
+        }
+
+        .zona-archivo p {
+            color: #6b7280;
+            font-size: 14px;
+            margin-bottom: 18px;
+        }
+
+        .input-archivo {
+            display: none;
+        }
+
+        .boton-archivo {
+            display: inline-block;
+            background: #4f46e5;
+            color: white;
+            padding: 11px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+
+        .boton-archivo:hover {
+            background: #4338ca;
+        }
+
+        .ayuda {
+            display: block;
+            margin-top: 12px;
+            color: #9ca3af;
+            font-size: 12px;
+        }
+
+        /* =========================
+           LISTA DE ARCHIVOS
+        ========================= */
+
+        .lista-archivos {
+            margin-top: 18px;
+            text-align: left;
         }
 
         .archivo {
             display: flex;
             align-items: center;
-            gap: 15px;
-            padding: 15px;
-            margin-bottom: 10px;
+            gap: 12px;
+            background: white;
             border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            background: #fafafa;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 8px;
+        }
+
+        .archivo-icono {
+            font-size: 25px;
         }
 
         .archivo-info {
@@ -116,57 +230,37 @@
         }
 
         .archivo-nombre {
-            font-weight: bold;
+            font-size: 14px;
+            font-weight: 600;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
         }
 
-        .archivo-fecha {
+        .archivo-tamano {
+            color: #9ca3af;
             font-size: 12px;
-            color: #6b7280;
-            margin-top: 4px;
-        }
-
-        .orden {
-            width: 80px;
-            padding: 10px;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
-            text-align: center;
-        }
-
-        .orden-label {
-            font-size: 12px;
-            color: #6b7280;
-            margin-bottom: 4px;
+            margin-top: 3px;
         }
 
         .eliminar {
-            display: flex;
-            align-items: center;
-            gap: 5px;
+            border: none;
+            background: #fee2e2;
             color: #b91c1c;
-            font-size: 13px;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
         }
 
-        .nuevos {
-            border: 2px dashed #c7d2fe;
-            border-radius: 12px;
-            padding: 25px;
-            text-align: center;
-            background: #f8faff;
+        .eliminar:hover {
+            background: #fecaca;
         }
 
-        .nuevos input {
-            margin-top: 15px;
-        }
-
-        .ayuda {
-            color: #6b7280;
-            font-size: 13px;
-            margin-top: 10px;
-        }
+        /* =========================
+           BOTONES
+        ========================= */
 
         .botones {
             display: flex;
@@ -175,46 +269,53 @@
             margin-top: 30px;
         }
 
-        button,
-        .cancelar {
+        .btn {
             border: none;
-            padding: 13px 22px;
-            border-radius: 10px;
-            font-weight: bold;
+            padding: 13px 24px;
+            border-radius: 11px;
+            font-size: 15px;
+            font-weight: 700;
             cursor: pointer;
             text-decoration: none;
+            transition: 0.2s;
         }
 
-        .guardar {
+        .btn-cancelar {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .btn-cancelar:hover {
+            background: #e5e7eb;
+        }
+
+        .btn-guardar {
             background: #4f46e5;
             color: white;
         }
 
-        .guardar:hover {
+        .btn-guardar:hover {
             background: #4338ca;
+            transform: translateY(-1px);
         }
 
-        .cancelar {
-            background: #e5e7eb;
-            color: #374151;
-        }
+        @media (max-width: 600px) {
 
-        @media (max-width: 650px) {
-
-            .archivo {
-                flex-wrap: wrap;
+            .contenedor {
+                margin: 20px auto;
+                padding: 12px;
             }
 
-            .archivo-info {
-                width: 100%;
+            .card {
+                padding: 22px;
+                border-radius: 15px;
             }
 
             .botones {
-                flex-direction: column;
+                flex-direction: column-reverse;
             }
 
-            button,
-            .cancelar {
+            .btn {
                 width: 100%;
                 text-align: center;
             }
@@ -222,31 +323,58 @@
         }
 
     </style>
-
 </head>
-
 
 <body>
 
 <div class="contenedor">
 
+    <a href="javascript:history.back()" class="volver">
+        ← Volver
+    </a>
+
     <div class="card">
 
-        <h1>
-            Editar lección
-        </h1>
+        <!-- ENCABEZADO -->
+        <div class="encabezado">
+            {% if creando %}
+                <h1>
+                    Crear lección
+                </h1>
+                 <p>
+                    Ingresa el título, contenido y material PDF de esta lección.
+                </p>
+            {% else %}
 
-        <p class="subtitulo">
-            Modifica la información y organiza el material de la lección.
-        </p>
+                <h1>
+                    Editar lección
+                </h1>
+
+                 <p>
+                Modifica el título, contenido y material PDF de esta lección.
+                </p>
+            {% endif %}
+
+        </div>
 
 
+        <!-- INFORMACIÓN DE LA LECCIÓN -->
+        <div class="curso">
+
+            <strong>Lección:</strong>
+
+            {{ leccion.titulo }}
+
+        </div>
+
+
+        <!-- ERRORES -->
         {% if errores %}
 
             <div class="errores">
 
                 <strong>
-                    Hay algunos problemas:
+                    Revisa los siguientes errores:
                 </strong>
 
                 <ul>
@@ -266,21 +394,31 @@
         {% endif %}
 
 
-        <form
-            action="{{ url_for('profesor.editlesson', id=leccion.id) }}"
-            method="POST"
-            enctype="multipart/form-data"
-            id="formEditar"
-        >
+        <!-- FORMULARIO -->
 
-            <!-- =====================================
-                 INFORMACIÓN DE LA LECCIÓN
-            ====================================== -->
+        <form
+        {% if creando %}
+            action="{{ url_for('profesor.newlesson', curso_id=curso_id) }}"
+        {% else %}
+            action="{{ url_for('profesor.editlesson', id=leccion.id) }}"
+        {% endif %}
+        method="POST"
+        enctype="multipart/form-data"
+        id="formLeccion"
+>
+
+            <!-- TÍTULO -->
 
             <div class="campo">
 
                 <label for="titulo">
-                    Título
+
+                    Título de la lección
+
+                    <span class="obligatorio">
+                        *
+                    </span>
+
                 </label>
 
                 <input
@@ -288,17 +426,23 @@
                     id="titulo"
                     name="titulo"
                     maxlength="255"
+                    placeholder="Ejemplo: Introducción a Python"
                     value="{{ leccion.titulo or '' }}"
                     required
+                    autocomplete="off"
                 >
 
             </div>
 
 
+            <!-- VISTA PREVIA -->
+
             <div class="campo">
 
                 <label for="vistaPreviaCon">
+
                     Vista previa
+
                 </label>
 
                 <input
@@ -306,101 +450,137 @@
                     id="vistaPreviaCon"
                     name="vistaPreviaCon"
                     maxlength="100"
+                    placeholder="Descripción corta de la lección"
                     value="{{ leccion.vistaPreviaCon or '' }}"
                 >
 
             </div>
 
 
+            <!-- CONTENIDO -->
+
             <div class="campo">
 
                 <label for="contenido">
-                    Contenido
+
+                    Contenido de la lección
+
                 </label>
 
                 <textarea
                     id="contenido"
                     name="contenido"
+                    maxlength="2000"
+                    placeholder="Escribe el contenido de la lección..."
                 >{{ leccion.contenido or '' }}</textarea>
+
+                <div class="contador">
+
+                    <span id="contador">
+                        {{ (leccion.contenido or '')|length }}
+                    </span>
+
+                    /2000
+
+                </div>
 
             </div>
 
 
-            <!-- =====================================
-                 PDF EXISTENTES
-            ====================================== -->
+            <!-- PDFs EXISTENTES -->
 
-            <div class="seccion">
+            <div class="campo">
 
-                <h2>
-                    Archivos de la lección
-                </h2>
+                <label>
 
-                <p class="ayuda">
-                    Si tienes 3 archivos, los órdenes válidos son
-                    1, 2 y 3.
-                </p>
+                    Archivos PDF actuales
+
+                </label>
 
 
                 {% if archivos_pdf %}
 
-                    {% for archivo in archivos_pdf %}
+                    <div class="lista-archivos">
 
-                        <div class="archivo">
+                        {% for archivo in archivos_pdf %}
 
-                            <div class="archivo-info">
+                            <div class="archivo">
 
-                                <div class="archivo-nombre">
-                                    📄 {{ archivo.nombre }}
+                                <div class="archivo-icono">
+                                    📄
                                 </div>
 
-                                <div class="archivo-fecha">
 
-                                    Subido:
-                                    {{ archivo.fechaSubida }}
+                                <div class="archivo-info">
+
+                                    <div class="archivo-nombre">
+
+                                        {{ archivo.nombre }}
+
+                                    </div>
+
+                                    <div class="archivo-tamano">
+
+                                        Orden actual:
+                                        {{ archivo.orden }}
+
+                                    </div>
+
+                                </div>
+
+
+                                <!-- ORDEN -->
+
+                                <div>
+
+                                    <label
+                                        for="orden_{{ archivo.id }}"
+                                        style="font-size: 12px; margin-bottom: 4px;"
+                                    >
+                                        Orden
+                                    </label>
+
+                                    <input
+                                        type="number"
+                                        id="orden_{{ archivo.id }}"
+                                        name="orden_{{ archivo.id }}"
+                                        value="{{ archivo.orden }}"
+                                        min="1"
+                                        style="width: 70px; padding: 7px;"
+                                    >
+
+                                </div>
+
+
+                                <!-- ELIMINAR -->
+
+                                <div>
+
+                                    <label
+                                        style="font-size: 12px; margin-bottom: 4px;"
+                                    >
+                                        Eliminar
+                                    </label>
+
+                                    <input
+                                        type="checkbox"
+                                        name="eliminar_pdf"
+                                        value="{{ archivo.id }}"
+                                        style="width: 20px; height: 20px;"
+                                    >
 
                                 </div>
 
                             </div>
 
+                        {% endfor %}
 
-                            <div>
-
-                                <div class="orden-label">
-                                    Orden
-                                </div>
-
-                                <input
-                                    type="number"
-                                    class="orden"
-                                    name="orden_{{ archivo.id }}"
-                                    value="{{ archivo.orden }}"
-                                    min="1"
-                                >
-
-                            </div>
-
-
-                            <label class="eliminar">
-
-                                <input
-                                    type="checkbox"
-                                    name="eliminar_pdf"
-                                    value="{{ archivo.id }}"
-                                >
-
-                                Eliminar
-
-                            </label>
-
-                        </div>
-
-                    {% endfor %}
+                    </div>
 
                 {% else %}
 
-                    <p>
-                        Esta lección todavía no tiene PDFs.
+                    <p style="color: #6b7280; margin-top: 10px;">
+                        Esta lección no tiene archivos PDF actualmente.
                     </p>
 
                 {% endif %}
@@ -408,59 +588,86 @@
             </div>
 
 
-            <!-- =====================================
-                 AGREGAR PDFs
-            ====================================== -->
+            <!-- AGREGAR NUEVOS PDF -->
 
-            <div class="seccion">
+            <div class="campo">
 
-                <h2>
-                    Agregar nuevos PDFs
-                </h2>
+                <label>
 
-                <div class="nuevos">
+                    Agregar nuevos archivos PDF
+
+                </label>
+
+
+                <div class="zona-archivo">
+
+                    <div class="icono-pdf">
+                        📄
+                    </div>
+
+                    <h3>
+                        Selecciona nuevos archivos PDF
+                    </h3>
 
                     <p>
-                        Puedes agregar uno o varios archivos PDF.
+                        Puedes agregar uno o varios archivos.
                     </p>
+
+
+                    <label
+                        for="archivos"
+                        class="boton-archivo"
+                    >
+                        Seleccionar PDF
+                    </label>
+
 
                     <input
                         type="file"
+                        id="archivos"
                         name="archivos"
+                        class="input-archivo"
                         accept=".pdf,application/pdf"
                         multiple
                     >
 
-                    <p class="ayuda">
-                        Solo PDF. Máximo 10 MB por archivo.
-                    </p>
+
+                    <span class="ayuda">
+                        Solo PDF · Máximo 10 MB por archivo
+                    </span>
+
+
+                    <div
+                        id="listaArchivos"
+                        class="lista-archivos"
+                    ></div>
 
                 </div>
 
             </div>
 
 
-            <!-- =====================================
-                 BOTONES
-            ====================================== -->
+            <!-- BOTONES -->
 
             <div class="botones">
 
                 <a
-                    href="{{ url_for('profesor_bp.insViewlesson', id=leccion.id) }}"
-                    class="cancelar"
+                    href="javascript:history.back()"
+                    class="btn btn-cancelar"
                 >
                     Cancelar
                 </a>
 
+
                 <button
                     type="submit"
-                    class="guardar"
+                    class="btn btn-guardar"
                 >
                     Guardar cambios
                 </button>
 
             </div>
+
 
         </form>
 
@@ -471,105 +678,392 @@
 
 <script>
 
-    document
-        .getElementById("formEditar")
-        .addEventListener("submit", function(event) {
+    const inputArchivo = document.getElementById('archivos');
+const contenedorLista = document.getElementById('listaArchivos');
 
-            const ordenes = [];
+// DataTransfer permite ir acumulando archivos en el input sin sobrescribirlos
+const dt = new DataTransfer();
 
-            const eliminados = Array.from(
-                document.querySelectorAll(
-                    'input[name="eliminar_pdf"]:checked'
-                )
-            ).map(function(input) {
-                return input.value;
-            });
+inputArchivo.addEventListener('change', function () {
+    for (let file of this.files) {
+        dt.items.add(file);
+    }
+    this.files = dt.files; // Sincroniza la lista de archivos acumulados
+    renderizarLista();
+});
+
+function renderizarLista() {
+    contenedorLista.innerHTML = '';
+    Array.from(inputArchivo.files).forEach((archivo, index) => {
+        const item = document.createElement('div');
+        item.className = 'd-flex justify-content-between align-items-center p-2 mb-2 bg-white rounded border';
+        item.style.fontSize = '0.9rem';
+
+        item.innerHTML = `
+            <div class="d-flex align-items-center gap-2 overflow-hidden">
+                <i class="bi bi-file-earmark-pdf-fill text-danger fs-5"></i>
+                <span class="text-truncate">${archivo.name}</span>
+                <small class="text-muted">(${(archivo.size / (1024 * 1024)).toFixed(2)} MB)</small>
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-danger border-0" onclick="eliminarArchivo(${index})">
+                <i class="bi bi-trash"></i>
+            </button>
+        `;
+        contenedorLista.appendChild(item);
+    });
+}
+
+function eliminarArchivo(index) {
+    dt.items.remove(index);
+    inputArchivo.files = dt.files;
+    renderizarLista();
+}
+
+    /* ==========================================
+       CONTADOR DE CONTENIDO
+    ========================================== */
+
+    const contenido =
+        document.getElementById("contenido");
+
+    const contador =
+        document.getElementById("contador");
 
 
-            document
-                .querySelectorAll('input[name^="orden_"]')
-                .forEach(function(input) {
+    contenido.addEventListener(
+        "input",
+        function () {
 
-                    const id =
-                        input.name.replace("orden_", "");
+            contador.textContent =
+                contenido.value.length;
 
-                    if (!eliminados.includes(id)) {
-
-                        ordenes.push(
-                            parseInt(input.value)
-                        );
-
-                    }
-
-                });
+        }
+    );
 
 
-            const nuevos =
-                document.querySelector(
-                    'input[name="archivos"]'
-                ).files.length;
+    /* ==========================================
+       ARCHIVOS PDF NUEVOS
+    ========================================== */
+
+    const inputArchivos =
+        document.getElementById("archivos");
+
+    const listaArchivos =
+        document.getElementById("listaArchivos");
 
 
-            const total =
-                ordenes.length + nuevos;
+    inputArchivos.addEventListener(
+        "change",
+        function () {
+
+            listaArchivos.innerHTML = "";
+
+            const archivos =
+                Array.from(this.files);
 
 
-            // Si no hay archivos, no validar orden.
-
-            if (total === 0) {
+            if (archivos.length === 0) {
                 return;
             }
 
 
-            const ordenesEsperados = [];
+            archivos.forEach(
+                function (archivo) {
 
-            for (
-                let i = 1;
-                i <= total;
-                i++
-            ) {
-
-                ordenesEsperados.push(i);
-
-            }
+                    const extension =
+                        archivo.name
+                            .split(".")
+                            .pop()
+                            .toLowerCase();
 
 
-            ordenes.sort(function(a, b) {
-                return a - b;
-            });
+                    /* VALIDAR PDF */
+
+                    if (extension !== "pdf") {
+
+                        alert(
+                            "El archivo '" +
+                            archivo.name +
+                            "' no es un PDF."
+                        );
+
+                        inputArchivos.value = "";
+
+                        listaArchivos.innerHTML = "";
+
+                        return;
+                    }
 
 
-            // Los nuevos archivos ocuparán los siguientes
-            // números, por lo que aquí solamente verificamos
-            // los existentes.
+                    /* VALIDAR TAMAÑO */
 
-            for (
-                let i = 0;
-                i < ordenes.length;
-                i++
-            ) {
+                    if (
+                        archivo.size >
+                        10 * 1024 * 1024
+                    ) {
 
-                if (
-                    !Number.isInteger(ordenes[i]) ||
-                    ordenes[i] < 1 ||
-                    ordenes[i] > total
-                ) {
+                        alert(
+                            "El archivo '" +
+                            archivo.name +
+                            "' supera los 10 MB."
+                        );
+
+                        inputArchivos.value = "";
+
+                        listaArchivos.innerHTML = "";
+
+                        return;
+                    }
+
+
+                    /* CREAR ELEMENTO */
+
+                    const elemento =
+                        document.createElement("div");
+
+
+                    elemento.className =
+                        "archivo";
+
+
+                    elemento.innerHTML = `
+
+                        <div class="archivo-icono">
+                            📄
+                        </div>
+
+                        <div class="archivo-info">
+
+                            <div class="archivo-nombre">
+                                ${archivo.name}
+                            </div>
+
+                            <div class="archivo-tamano">
+                                ${formatearTamaño(archivo.size)}
+                            </div>
+
+                        </div>
+
+                    `;
+
+
+                    listaArchivos.appendChild(
+                        elemento
+                    );
+
+                }
+            );
+
+        }
+    );
+
+
+    /* ==========================================
+       FORMATEAR TAMAÑO
+    ========================================== */
+
+    function formatearTamaño(bytes) {
+
+        if (bytes === 0) {
+            return "0 Bytes";
+        }
+
+
+        const unidades = [
+            "Bytes",
+            "KB",
+            "MB",
+            "GB"
+        ];
+
+
+        const i =
+            Math.floor(
+                Math.log(bytes) /
+                Math.log(1024)
+            );
+
+
+        return (
+            parseFloat(
+                (
+                    bytes /
+                    Math.pow(1024, i)
+                ).toFixed(2)
+            )
+            + " "
+            + unidades[i]
+        );
+
+    }
+
+
+    /* ==========================================
+       VALIDACIÓN ANTES DE ENVIAR
+    ========================================== */
+
+    document
+        .getElementById("formLeccion")
+        .addEventListener(
+            "submit",
+            function (event) {
+
+                const titulo =
+                    document
+                        .getElementById("titulo")
+                        .value
+                        .trim();
+
+
+                if (titulo.length < 3) {
 
                     event.preventDefault();
 
                     alert(
-                        "Los órdenes deben estar entre 1 y " +
-                        total +
-                        "."
+                        "El título debe tener al menos 3 caracteres."
                     );
 
                     return;
 
                 }
 
-            }
 
-        });
+                /* VALIDAR ÓRDENES */
+
+                const ordenes =
+                    document.querySelectorAll(
+                        'input[name^="orden_"]'
+                    );
+
+
+                const eliminados =
+                    document.querySelectorAll(
+                        'input[name="eliminar_pdf"]:checked'
+                    );
+
+
+                const ordenesUsadas = [];
+
+
+                ordenes.forEach(
+                    function (input) {
+
+                        const id =
+                            input.name.replace(
+                                "orden_",
+                                ""
+                            );
+
+
+                        const eliminado =
+                            document.querySelector(
+                                'input[name="eliminar_pdf"][value="' +
+                                id +
+                                '"]'
+                            );
+
+
+                        if (
+                            eliminado &&
+                            eliminado.checked
+                        ) {
+                            return;
+                        }
+
+
+                        const orden =
+                            parseInt(input.value);
+
+
+                        if (
+                            isNaN(orden) ||
+                            orden < 1
+                        ) {
+
+                            event.preventDefault();
+
+                            alert(
+                                "El orden de los PDFs debe comenzar desde 1."
+                            );
+
+                            return;
+
+                        }
+
+
+                        if (
+                            ordenesUsadas.includes(orden)
+                        ) {
+
+                            event.preventDefault();
+
+                            alert(
+                                "No puedes repetir el orden de los PDFs."
+                            );
+
+                            return;
+
+                        }
+
+
+                        ordenesUsadas.push(orden);
+
+                    }
+                );
+
+
+                /* VALIDAR NUEVOS PDF */
+
+                const archivos =
+                    inputArchivos.files;
+
+
+                for (
+                    let i = 0;
+                    i < archivos.length;
+                    i++
+                ) {
+
+                    const archivo =
+                        archivos[i];
+
+
+                    if (
+                        !archivo.name
+                            .toLowerCase()
+                            .endsWith(".pdf")
+                    ) {
+
+                        event.preventDefault();
+
+                        alert(
+                            "Solo puedes subir archivos PDF."
+                        );
+
+                        return;
+
+                    }
+
+
+                    if (
+                        archivo.size >
+                        10 * 1024 * 1024
+                    ) {
+
+                        event.preventDefault();
+
+                        alert(
+                            "Cada PDF debe pesar máximo 10 MB."
+                        );
+
+                        return;
+
+                    }
+
+                }
+
+            }
+        );
 
 </script>
 

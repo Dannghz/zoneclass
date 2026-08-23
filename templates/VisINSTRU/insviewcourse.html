@@ -273,6 +273,32 @@
             box-shadow: 0 6px 18px rgba(124, 92, 219, 0.25);
         }
 
+        .btn-delete {
+            width: 100%;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #c9029e, #cd1cdd);
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            box-shadow: 0 6px 18px rgba(124, 92, 219, 0.3);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+
+        .btn-delete:hover {
+            background-color: #ec1ba6;
+            color: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(124, 92, 219, 0.25);
+        }
         /* ==========================================================================
            5. TARJETAS DE LECCIONES (COLUMNA DERECHA)
            ========================================================================== */
@@ -425,7 +451,7 @@
                     <!-- FOTO O AVATAR DEL PROFESOR -->
                     <div class="profesor-avatar-container">
                         {% if curso.profesor_foto %}
-                            <img src="{{ curso.profesor_foto }}" alt="Profesor(a) {{ curso.profesor_nombre }}">
+                            <img src="{{ url_for('profesor.mostrar_foto', id=curso.profesor_id) }}" alt="Profesor(a) {{ curso.profesor_nombre }}">
                         {% else %}
                             <svg class="profesor-avatar-svg" viewBox="0 0 24 24">
                                 <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
@@ -455,20 +481,36 @@
                         </div>
                     </div>
 
-                    <!-- BOTÓN DE REGISTRO AL CURSO -->
-                    <form action="/regis/{{ curso.id }}" method="POST" style="width: 100%;">
+                 
+                    
+
+                    <!-- BOTÓN EDITAR CURSO (VERIFICA SI PUEDE EDITAR O SI ES PROFESOR/ADMIN) -->
+                    {% if not puede_editar %}
+                        <form action="/regis/{{ curso.id }}" method="POST" style="width: 100%;">
                         <button type="submit" class="btn-register">
                             <i class="bi bi-bookmark-check-fill me-2"></i>
                             Registrarse al Curso
                         </button>
                     </form>
-
-                    <!-- BOTÓN EDITAR CURSO (VERIFICA SI PUEDE EDITAR O SI ES PROFESOR/ADMIN) -->
-                    {% if puede_editar %}
+                    {% else %}
+                         <form action="{{url_for('profesor.deleteCUR', id=curso.id)}}" method="POST" style="width: 100%;">
+                                <BUtton type="submit" class="btn-delete"
+                                    onclick="return confirm('¿ seguro que deseas eliminar este curso?')">
+                                    <i class="bi bi-trash-fill"></i>Delete
+                                </BUtton>
+                        </form>
+                        
                         <a href="/editcourse/{{ curso.id }}" class="btn-edit">
                             <i class="bi bi-pencil-square me-2"></i>
                             Editar Curso
                         </a>
+                        <a href="{{ url_for('profesor.newlesson', curso_id=curso.id) }}" class="btn-edit">
+                            <i class="bi bi-pencil-square me-2"></i>
+                            Crear Lección
+                        </a>
+                        
+                       
+                            
                     {% endif %}
 
                 </div>
@@ -494,12 +536,12 @@
                         <div class="lesson-preview-box">
                             <div class="lesson-preview-label">Vista Previa / Resumen</div>
                             <p class="lesson-preview-content">
-                                {{ lesson.vistaPreviaCom if lesson.vistaPreviaCom else 'Sin vista previa disponible.' }}
+                                {{ lesson.vistaPreviaCon if lesson.vistaPreviaCon else 'Sin vista previa disponible.' }}
                             </p>
                         </div>
 
                         <div class="lesson-footer">
-                            <a href="{{ url_for('profesor.insviewlesson', curso_id=curso.id) }}" target="_blank" class="btn-go-lesson">
+                            <a href="{{ url_for('profesor.insViewlesson', id=lesson.id) }}" target="_blank" class="btn-go-lesson">
                                 Ir a la lección
                                 <i class="bi bi-arrow-right-short fs-5"></i>
                             </a>

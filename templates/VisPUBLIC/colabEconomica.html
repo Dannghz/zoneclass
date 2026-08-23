@@ -1,0 +1,1021 @@
+
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>ZoneClass - Apoya el proyecto</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+          rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/main.css') }}">
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: #f4f0ff;
+            color: #2d3748;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* NAVBAR */
+
+        .navbar-custom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 5%;
+            background-color: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(124, 92, 219, 0.08);
+            border-bottom: 1px solid #ede9fe;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, #8b5cf6, #7c5cdb);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-weight: 800;
+            font-size: 1.4rem;
+            box-shadow: 0 4px 12px rgba(124, 92, 219, 0.3);
+        }
+
+        .logo-text {
+            font-size: 1.3rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            color: #3b0764;
+        }
+
+        .nav-login {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 9px 17px;
+            border-radius: 12px;
+            background: #f3e8ff;
+            color: #6b21a8;
+            text-decoration: none;
+            font-weight: 700;
+            transition: .3s;
+        }
+
+        .nav-login:hover {
+            background: #7c5cdb;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* HERO */
+
+        .hero-zone {
+            padding: 65px 20px 45px;
+            background: linear-gradient(180deg, #f4f0ff 0%, #ead8ff 100%);
+            text-align: center;
+        }
+
+        .hero-icon {
+            width: 68px;
+            height: 68px;
+            margin: 0 auto 18px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #7c5cdb, #9333ea);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.9rem;
+            box-shadow: 0 10px 25px rgba(124, 92, 219, .25);
+        }
+
+        .hero-zone h1 {
+            color: #2e1065;
+            font-size: 2.7rem;
+            font-weight: 900;
+            margin-bottom: 15px;
+        }
+
+        .hero-zone p {
+            max-width: 760px;
+            margin: auto;
+            color: #5b5568;
+            line-height: 1.7;
+            font-size: 1rem;
+        }
+
+        /* CONTENT */
+
+        .content-zone {
+            padding: 45px 20px 75px;
+        }
+
+        .main-card {
+            max-width: 950px;
+            margin: auto;
+            background: white;
+            border: 1px solid #e9d5ff;
+            border-radius: 24px;
+            box-shadow: 0 12px 35px rgba(124, 92, 219, .09);
+            overflow: hidden;
+        }
+
+        .section {
+            padding: 32px;
+        }
+
+        .section + .section {
+            border-top: 1px solid #ede9fe;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            color: #2e1065;
+            font-size: 1.25rem;
+            font-weight: 800;
+            margin-bottom: 16px;
+        }
+
+        .section-title i {
+            color: #7c5cdb;
+            font-size: 1.35rem;
+        }
+
+        .intro-text {
+            color: #5f6470;
+            line-height: 1.75;
+            margin-bottom: 0;
+        }
+
+        /* NOTICE */
+
+        .notice {
+            margin-top: 20px;
+            padding: 18px 20px;
+            border-radius: 15px;
+            background: #faf5ff;
+            border: 1px solid #e9d5ff;
+            color: #5b21b6;
+        }
+
+        .notice strong {
+            color: #3b0764;
+        }
+
+        /* USE OF DONATIONS */
+
+        .support-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+        }
+
+        .support-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 17px;
+            background: #faf9ff;
+            border: 1px solid #eee9fa;
+            border-radius: 15px;
+        }
+
+        .support-icon {
+            width: 40px;
+            height: 40px;
+            flex: 0 0 40px;
+            border-radius: 11px;
+            background: #f3e8ff;
+            color: #7c5cdb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+        }
+
+        .support-item strong {
+            display: block;
+            color: #30224a;
+            margin-bottom: 4px;
+            font-size: .95rem;
+        }
+
+        .support-item span {
+            color: #737783;
+            font-size: .84rem;
+            line-height: 1.5;
+        }
+
+        /* DONATION AMOUNTS */
+
+        .amount-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .amount {
+            padding: 17px 10px;
+            text-align: center;
+            background: #faf9ff;
+            border: 1px solid #e9d5ff;
+            border-radius: 14px;
+        }
+
+        .amount strong {
+            display: block;
+            color: #6b21a8;
+            font-size: 1.15rem;
+            margin-bottom: 4px;
+        }
+
+        .amount span {
+            color: #77717f;
+            font-size: .78rem;
+        }
+
+        /* PAYMENT */
+
+        .payment-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .payment-box {
+            padding: 24px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #f3e8ff, #faf5ff);
+            border: 1px solid #e9d5ff;
+        }
+
+        .payment-icon {
+            width: 52px;
+            height: 52px;
+            margin-bottom: 13px;
+            border-radius: 15px;
+            background: #7c5cdb;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.35rem;
+        }
+
+        .payment-box h4 {
+            color: #3b0764;
+            font-size: 1.05rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+        }
+
+        .payment-data {
+            color: #5f6470;
+            font-size: .9rem;
+            line-height: 1.7;
+        }
+
+        .payment-data strong {
+            color: #30224a;
+        }
+
+        /* DEMO BADGE */
+
+        .demo-badge {
+            display: inline-block;
+            margin-bottom: 12px;
+            padding: 5px 10px;
+            border-radius: 20px;
+            background: #fef3c7;
+            color: #92400e;
+            font-size: .75rem;
+            font-weight: 800;
+        }
+
+        /* EMAIL */
+
+        .email-box {
+            padding: 25px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #f3e8ff, #faf5ff);
+            border: 1px solid #e9d5ff;
+            text-align: center;
+        }
+
+        .mail-icon {
+            width: 55px;
+            height: 55px;
+            margin: 0 auto 12px;
+            border-radius: 16px;
+            background: #7c5cdb;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.45rem;
+        }
+
+        .email-label {
+            color: #6b7280;
+            font-size: .85rem;
+            margin-bottom: 5px;
+        }
+
+        .email-address {
+            display: inline-block;
+            color: #6b21a8;
+            font-size: 1.25rem;
+            font-weight: 900;
+            text-decoration: none;
+            margin-bottom: 10px;
+        }
+
+        .email-address:hover {
+            color: #4c1d95;
+            text-decoration: underline;
+        }
+
+        .email-message {
+            color: #5f6470;
+            font-size: .9rem;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        /* CLOSING */
+
+        .closing {
+            text-align: center;
+            background: #fcfbff;
+        }
+
+        .closing i {
+            color: #7c5cdb;
+            font-size: 1.7rem;
+        }
+
+        .closing h3 {
+            color: #2e1065;
+            font-size: 1.2rem;
+            font-weight: 800;
+            margin: 12px 0 8px;
+        }
+
+        .closing p {
+            max-width: 680px;
+            margin: auto;
+            color: #6b7280;
+            line-height: 1.65;
+            font-size: .92rem;
+        }
+
+        /* FOOTER */
+
+        .footer-zone {
+            background: #2e1065;
+            color: #ede9fe;
+            text-align: center;
+            padding: 24px 15px;
+        }
+
+        .footer-zone p {
+            margin: 0;
+            font-size: .88rem;
+        }
+
+        /* RESPONSIVE */
+
+        @media (max-width: 768px) {
+
+            .hero-zone {
+                padding: 48px 18px 35px;
+            }
+
+            .hero-zone h1 {
+                font-size: 2.15rem;
+            }
+
+            .section {
+                padding: 25px 20px;
+            }
+
+            .support-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .payment-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .amount-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+
+            .navbar-custom {
+                padding: 13px 4%;
+            }
+
+            .logo-text {
+                font-size: 1.05rem;
+            }
+
+            .logo-icon {
+                width: 38px;
+                height: 38px;
+            }
+
+            .nav-login {
+                padding: 8px 11px;
+                font-size: .82rem;
+            }
+
+            .hero-zone h1 {
+                font-size: 1.9rem;
+            }
+
+            .amount-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+
+    <nav class="navbar-custom">
+
+        <a href="" class="logo-container">
+            <div class="logo-icon">Z</div>
+            <span class="logo-text">ZONECLASS</span>
+        </a>
+
+        {% if session.get('rol') == "PROFESOR" %}
+
+        <div class="ms-auto">
+            <a href="/menuInstru" class="nav-login">
+                <i class="bi bi-arrow-left"></i>
+                Volver al menú
+            </a>
+        </div>
+
+        {% elif session.get('rol') == "USUARIO" %}
+
+        <div class="ms-auto">
+            <a href="/menuUser" class="nav-login">
+                <i class="bi bi-arrow-left"></i>
+                Volver al menú
+            </a>
+        </div>
+
+        {% endif %}
+
+    </nav>
+
+
+    <!-- HERO -->
+
+    <header class="hero-zone">
+
+        <div class="container">
+
+            <div class="hero-icon">
+                <i class="bi bi-heart-fill"></i>
+            </div>
+
+            <h1>Apoya a ZoneClass</h1>
+
+            <p>
+                Tu apoyo económico puede contribuir al mantenimiento y
+                crecimiento de ZoneClass, un proyecto educativo creado para
+                facilitar el acceso al conocimiento y fortalecer una comunidad
+                de aprendizaje.
+            </p>
+
+        </div>
+
+    </header>
+
+
+    <!-- CONTENT -->
+
+    <main class="content-zone">
+
+        <div class="main-card">
+
+
+            <!-- AGRADECIMIENTO -->
+
+            <section class="section">
+
+                <div class="section-title">
+                    <i class="bi bi-hand-thumbs-up-fill"></i>
+                    Gracias por apoyar el proyecto
+                </div>
+
+                <p class="intro-text">
+
+                    Mantener una plataforma educativa requiere recursos para
+                    cubrir servicios tecnológicos, almacenamiento, dominio,
+                    mantenimiento y futuras mejoras.
+
+                    Las contribuciones económicas permiten que ZoneClass pueda
+                    continuar desarrollándose y ofreciendo nuevas herramientas
+                    para la comunidad.
+
+                </p>
+
+                <div class="notice">
+
+                    <i class="bi bi-info-circle-fill me-2"></i>
+
+                    <strong>Importante:</strong>
+
+                    Los métodos y datos de pago mostrados en esta página son
+                    únicamente datos de demostración para el proyecto.
+                    No realices transferencias utilizando estos datos.
+
+                </div>
+
+            </section>
+
+
+            <!-- PARA QUÉ SE UTILIZA -->
+
+            <section class="section">
+
+                <div class="section-title">
+
+                    <i class="bi bi-bar-chart-fill"></i>
+
+                    ¿En qué puede ayudar tu aporte?
+
+                </div>
+
+                <p class="intro-text mb-4">
+
+                    Las contribuciones pueden destinarse a diferentes aspectos
+                    relacionados con el funcionamiento y desarrollo de la
+                    plataforma.
+
+                </p>
+
+
+                <div class="support-grid">
+
+
+                    <div class="support-item">
+
+                        <div class="support-icon">
+                            <i class="bi bi-server"></i>
+                        </div>
+
+                        <div>
+
+                            <strong>Servidores</strong>
+
+                            <span>
+                                Ayuda a mantener disponibles los servicios
+                                necesarios para que la plataforma funcione.
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="support-item">
+
+                        <div class="support-icon">
+                            <i class="bi bi-globe2"></i>
+                        </div>
+
+                        <div>
+
+                            <strong>Dominio y servicios web</strong>
+
+                            <span>
+                                Contribuye al mantenimiento del dominio y otros
+                                servicios utilizados por ZoneClass.
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="support-item">
+
+                        <div class="support-icon">
+                            <i class="bi bi-code-slash"></i>
+                        </div>
+
+                        <div>
+
+                            <strong>Desarrollo</strong>
+
+                            <span>
+                                Permite implementar nuevas funciones, corregir
+                                errores y mejorar la experiencia de usuario.
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="support-item">
+
+                        <div class="support-icon">
+                            <i class="bi bi-database-fill"></i>
+                        </div>
+
+                        <div>
+
+                            <strong>Almacenamiento</strong>
+
+                            <span>
+                                Ayuda a cubrir los recursos necesarios para
+                                almacenar información y contenido educativo.
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="support-item">
+
+                        <div class="support-icon">
+                            <i class="bi bi-shield-check"></i>
+                        </div>
+
+                        <div>
+
+                            <strong>Mantenimiento y seguridad</strong>
+
+                            <span>
+                                Contribuye a mantener la plataforma actualizada
+                                y con mejores prácticas de seguridad.
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="support-item">
+
+                        <div class="support-icon">
+                            <i class="bi bi-lightbulb-fill"></i>
+                        </div>
+
+                        <div>
+
+                            <strong>Nuevas funciones</strong>
+
+                            <span>
+                                Facilita la creación de herramientas educativas
+                                y mejoras para estudiantes y profesores.
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+            </section>
+
+
+            <!-- APORTES -->
+
+            <section class="section">
+
+                <div class="section-title">
+
+                    <i class="bi bi-cash-coin"></i>
+
+                    Puedes aportar la cantidad que desees
+
+                </div>
+
+                <p class="intro-text">
+
+                    No existe una cantidad obligatoria. Cualquier contribución
+                    voluntaria puede ayudar al mantenimiento del proyecto.
+
+                </p>
+
+
+                <div class="amount-grid">
+
+                    <div class="amount">
+                        <strong>$5.000</strong>
+                        <span>Aporte pequeño</span>
+                    </div>
+
+                    <div class="amount">
+                        <strong>$10.000</strong>
+                        <span>Aporte básico</span>
+                    </div>
+
+                    <div class="amount">
+                        <strong>$25.000</strong>
+                        <span>Aporte medio</span>
+                    </div>
+
+                    <div class="amount">
+                        <strong>$50.000</strong>
+                        <span>Aporte especial</span>
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- MÉTODOS DE DONACIÓN -->
+
+            <section class="section">
+
+                <div class="section-title">
+
+                    <i class="bi bi-wallet2"></i>
+
+                    Métodos de apoyo
+
+                </div>
+
+                <p class="intro-text">
+
+                    A continuación se muestran métodos de pago de ejemplo para
+                    representar cómo podría funcionar el sistema de donaciones
+                    de ZoneClass.
+
+                </p>
+
+
+                <div class="payment-grid">
+
+
+                    <!-- BANCO -->
+
+                    <div class="payment-box">
+
+                        <span class="demo-badge">
+                            DATOS DE DEMOSTRACIÓN
+                        </span>
+
+                        <div class="payment-icon">
+                            <i class="bi bi-bank2"></i>
+                        </div>
+
+                        <h4>Transferencia bancaria</h4>
+
+                        <div class="payment-data">
+
+                            <strong>Banco:</strong>
+                            Banco ZoneClass
+
+                            <br>
+
+                            <strong>Tipo de cuenta:</strong>
+                            Cuenta de ahorros
+
+                            <br>
+
+                            <strong>Número:</strong>
+                            000000000000
+
+                            <br>
+
+                            <strong>Titular:</strong>
+                            Fundación ZoneClass
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- NEQUI -->
+
+                    <div class="payment-box">
+
+                        <span class="demo-badge">
+                            DATOS DE DEMOSTRACIÓN
+                        </span>
+
+                        <div class="payment-icon">
+                            <i class="bi bi-phone-fill"></i>
+                        </div>
+
+                        <h4>Pago móvil</h4>
+
+                        <div class="payment-data">
+
+                            <strong>Servicio:</strong>
+                            ZonePay Demo
+
+                            <br>
+
+                            <strong>Número:</strong>
+                            300 000 0000
+
+                            <br>
+
+                            <strong>Nombre:</strong>
+                            ZoneClass Demo
+
+                            <br>
+
+                            <strong>Referencia:</strong>
+                            APOYO-ZONECLASS
+
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+
+                <div class="notice">
+
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+
+                    <strong>Advertencia:</strong>
+
+                    Los datos anteriores son ficticios y forman parte de la
+                    demostración visual del proyecto. Sustitúyelos por
+                    información real únicamente cuando tengas configurado un
+                    método oficial de recepción de donaciones.
+
+                </div>
+
+            </section>
+
+
+            <!-- COMPROBANTE -->
+
+            <section class="section">
+
+                <div class="section-title">
+
+                    <i class="bi bi-receipt"></i>
+
+                    Notificación de aporte
+
+                </div>
+
+                <div class="email-box">
+
+                    <div class="mail-icon">
+                        <i class="bi bi-envelope-paper-fill"></i>
+                    </div>
+
+                    <div class="email-label">
+
+                        Correo de demostración para notificar un aporte:
+
+                    </div>
+
+                    <a href="mailto:donaciones.zoneclass@gmail.com"
+                       class="email-address">
+
+                        donaciones.zoneclass@gmail.com
+
+                    </a>
+
+                    <p class="email-message">
+
+                        Si el sistema real llegara a utilizar este mecanismo,
+                        el usuario podría enviar el comprobante de pago junto
+                        con el valor aportado y una referencia de la operación.
+
+                    </p>
+
+                </div>
+
+            </section>
+
+
+            <!-- TRANSPARENCIA -->
+
+            <section class="section">
+
+                <div class="section-title">
+
+                    <i class="bi bi-eye-fill"></i>
+
+                    Transparencia
+
+                </div>
+
+                <p class="intro-text">
+
+                    ZoneClass busca que los recursos destinados al proyecto
+                    sean utilizados de manera responsable. En una futura
+                    implementación del sistema de donaciones se podría
+                    incorporar un registro de ingresos y gastos destinado a
+                    informar a la comunidad sobre el uso general de los fondos.
+
+                </p>
+
+                <div class="notice">
+
+                    <i class="bi bi-graph-up-arrow me-2"></i>
+
+                    <strong>Objetivo:</strong>
+
+                    utilizar los recursos principalmente para mantener,
+                    mejorar y ampliar las herramientas educativas disponibles
+                    para la comunidad.
+
+                </div>
+
+            </section>
+
+
+            <!-- MENSAJE FINAL -->
+
+            <section class="section closing">
+
+                <i class="bi bi-stars"></i>
+
+                <h3>
+                    Tu apoyo ayuda a construir ZoneClass
+                </h3>
+
+                <p>
+
+                    Cada aporte puede contribuir al crecimiento de un proyecto
+                    educativo que busca facilitar el acceso al conocimiento.
+                    Gracias por apoyar el desarrollo de ZoneClass y por formar
+                    parte de su comunidad.
+
+                </p>
+
+            </section>
+
+
+        </div>
+
+    </main>
+
+
+    <!-- FOOTER -->
+
+    <footer class="footer-zone">
+
+        <p>
+            © 2026 ZoneClass. Proyecto educativo público.
+            Gracias por contribuir.
+        </p>
+
+    </footer>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+    </script>
+
+</body>
+
+</html>
+```

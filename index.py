@@ -34,9 +34,60 @@ def logout():
 
     session.clear()
 
-    return redirect(url_for("login"))
+    return redirect(url_for("cursos_publicos"))
+
+@app.route("/colaboracion")
+def colaboracion():
+
+    if "user_id" not in session:
+            return redirect(url_for("login"))
+    
+       
+    
+    return render_template("VisPUBLIC/colaboracion.html" )
+
+@app.route("/economico")
+def economico():
+
+    if "user_id" not in session:
+            return redirect(url_for("login"))
+    
+       
+    
+    return render_template("VisPUBLIC/colabEconomica.html")
 
 
+# login-------------------------------------------------------------------------------------------------------#
+@app.route("/cursos")
+def cursos_publicos():
+
+    cursor = db.conexion.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT
+            cursos.*,
+            usuarios.nombre AS profesor_nombre,
+            usuarios.foto AS profesor_foto,
+            COUNT(DISTINCT lecciones.id) AS total_lecciones,
+            COUNT(DISTINCT inscripciones.usuario_id) AS total_estudiantes
+        FROM cursos
+        INNER JOIN usuarios
+            ON usuarios.id = cursos.profesor_id
+        LEFT JOIN lecciones
+            ON cursos.id = lecciones.curso_id
+        LEFT JOIN inscripciones
+            ON cursos.id = inscripciones.curso_id
+        GROUP BY cursos.id
+        ORDER BY cursos.id DESC
+    """)
+
+    cursos = cursor.fetchall()
+    cursor.close()
+
+    return render_template(
+        "VisPUBLIC/cursos.html",
+        cursos=cursos
+    )
 # login-------------------------------------------------------------------------------------------------------#
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -120,6 +171,7 @@ def add_user():
 
     if request.method == "POST":
 
+       
         nombre = request.form["nombre"]
         edad = request.form["edad"]
         email = request.form["email"]
@@ -128,13 +180,16 @@ def add_user():
         fecha_registro = request.form["fecha_registro"]
 
         error = None
+    
 
         # VALIDACIONES
         if len(nombre) < 3:
             error = "Nombre muy corto"
 
-        if edad > 120 or edad < 0:
-            error = "Edad inválida"
+
+           
+
+        
 
         if not email or "@" not in email:
             error = "Email inválido"
@@ -185,33 +240,54 @@ def edit_user(id):
 
     if request.method == "POST":
 
-        nombre = request.form["nombre"]
-        edad = request.form["edad"]
-        email = request.form["email"]
-        contrasena = request.form["contrasena"]
-        rol = request.form["rol"]
-        fecha_registro = request.form["fecha_registro"]
+        nombre = request.form.get("nombre", "").strip()
+        edad = request.form.get("edad", "").strip()
+        email = request.form.get("email", "").strip()
+        contrasena = request.form.get("contrasena", "")
+        rol = request.form.get("rol", "").strip()
+        fecha_registro = request.form.get("fecha_registro", "").strip()
 
-        cursor.execute(
-            """
-        UPDATE usuarios
-        SET nombre=%s,edad=%s,email=%s,contrasena=%s,rol=%s,fecha_registro=%s
-        WHERE id=%s
-        """,
-            (nombre, edad, email, contrasena, rol, fecha_registro, id),
-        )
+        cursor.execute("""
+            UPDATE usuarios
+            SET nombre = %s,
+                edad = %s,
+                email = %s,
+                contrasena = %s,
+                rol = %s,
+                fecha_registro = %s
+            WHERE id = %s
+        """, (
+            nombre,
+            edad,
+            email,
+            contrasena,
+            rol,
+            fecha_registro,
+            id
+        ))
 
         db.conexion.commit()
+        cursor.close()
 
         return redirect(url_for("users"))
 
-    # 🔹 ESTE ES EL PASO CLAVE
-    cursor.execute("SELECT * FROM usuarios WHERE id=%s", (id,))
+    cursor.execute("""
+        SELECT *
+        FROM usuarios
+        WHERE id = %s
+    """, (id,))
+
     user = cursor.fetchone()
 
     cursor.close()
 
-    return render_template("users/form.html", user=user)
+    if not user:
+        return "Usuario no encontrado", 404
+
+    return render_template(
+        "users/form.html",
+        user=user
+    )
 
 
 @app.route("/deleteUS/<int:id>", methods=["POST"])

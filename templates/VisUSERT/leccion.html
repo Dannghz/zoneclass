@@ -397,7 +397,7 @@
                             </div>
                         </div>
 
-                        <a href="{{ pdf.ruta }}" target="_blank" class="btn-download-pdf" title="Descargar/Ver PDF">
+                        <a href="{{ url_for('static', filename=pdf.ruta) }}" target="_blank "class="btn-download-pdf" title="Descargar/Ver PDF">
                             <i class="bi bi-download"></i>
                         </a>
                     </div>

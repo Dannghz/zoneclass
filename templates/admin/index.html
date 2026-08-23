@@ -3,97 +3,425 @@
 <head>
     <meta charset="UTF-8">
     <title>Zone Class - Home</title>
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" type="" href="{{url_for('static', filename='css/main.css')}}">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</head>
-<body >
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: #f4f0ff;
+            color: #2d3748;
+            min-height: 100vh;
+        }
+
+        /* NAVBAR */
+        .navbar-custom {
+            background: rgba(255, 255, 255, 0.95);
+            border-bottom: 1px solid #ede9fe;
+            box-shadow: 0 4px 20px rgba(124, 92, 219, 0.08);
+            padding: 15px 0;
+        }
+
+        .brand-zone {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #8b5cf6, #7c5cdb);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.35rem;
+            font-weight: 800;
+            box-shadow: 0 5px 15px rgba(124, 92, 219, 0.28);
+        }
+
+        .brand-text {
+            color: #3b0764;
+            font-size: 1.25rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+
+        .nav-link-custom {
+            color: #5b21b6 !important;
+            background: #f3e8ff;
+            border-radius: 12px;
+            padding: 9px 18px !important;
+            font-weight: 700;
+            margin-left: 8px;
+            transition: .3s;
+        }
+
+        .nav-link-custom:hover {
+            background: #7c5cdb;
+            color: white !important;
+            transform: translateY(-2px);
+        }
+
+        /* HERO */
+        .hero {
+            background: linear-gradient(180deg, #f4f0ff 0%, #ead8ff 100%);
+            padding: 75px 20px 65px;
+            text-align: center;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            background: #e9d5ff;
+            color: #6b21a8;
+            padding: 7px 16px;
+            border-radius: 20px;
+            font-size: .8rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 18px;
+        }
+
+        .hero h1 {
+            color: #2e1065;
+            font-size: 3.3rem;
+            font-weight: 900;
+            margin-bottom: 18px;
+        }
+
+        .hero h1 span {
+            background: linear-gradient(135deg, #7c5cdb, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            max-width: 700px;
+            margin: auto;
+            color: #52525b;
+            font-size: 1.08rem;
+            line-height: 1.7;
+        }
+
+        /* CARDS */
+        .content-section {
+            padding: 55px 20px 75px;
+        }
+
+        .section-title {
+            text-align: center;
+            color: #2e1065;
+            font-weight: 800;
+            font-size: 1.9rem;
+            margin-bottom: 10px;
+        }
+
+        .section-description {
+            text-align: center;
+            color: #64748b;
+            margin-bottom: 38px;
+        }
+
+        .admin-card {
+            height: 100%;
+            background: white;
+            border: 1px solid #e9d5ff;
+            border-radius: 22px;
+            padding: 30px 26px;
+            box-shadow: 0 8px 24px rgba(124, 92, 219, 0.07);
+            transition: all .3s ease;
+            text-align: center;
+        }
+
+        .admin-card:hover {
+            transform: translateY(-7px);
+            border-color: #c084fc;
+            box-shadow: 0 16px 34px rgba(124, 92, 219, 0.15);
+        }
+
+        .card-icon {
+            width: 62px;
+            height: 62px;
+            margin: 0 auto 18px;
+            border-radius: 17px;
+            background: linear-gradient(135deg, #f3e8ff, #e9d5ff);
+            color: #7c5cdb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+        }
+
+        .admin-card h3 {
+            color: #1e1b4b;
+            font-size: 1.25rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+        }
+
+        .admin-card p {
+            color: #6b7280;
+            line-height: 1.6;
+            font-size: .92rem;
+            min-height: 72px;
+        }
+
+        .btn-zone {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            border: none;
+            border-radius: 12px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #7c5cdb, #9333ea);
+            color: white;
+            font-weight: 700;
+            text-decoration: none;
+            transition: .3s;
+            box-shadow: 0 5px 14px rgba(124, 92, 219, .2);
+        }
+
+        .btn-zone:hover {
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 9px 20px rgba(124, 92, 219, .3);
+        }
+
+        /* FOOTER */
+        .footer-zone {
+            background: #2e1065;
+            color: #ede9fe;
+            text-align: center;
+            padding: 24px 15px;
+        }
+
+        .footer-zone p {
+            margin: 0;
+            font-size: .9rem;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.35rem;
+            }
+
+            .nav-link-custom {
+                margin: 6px 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-custom">
     <div class="container">
-        <a class="navbar-brand" href="#">Zone Class</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" 
-            data-bs-target="#navbarNav" aria-controls="navbarNav" 
-            aria-expanded="false" aria-label="Toggle navigation">
+
+        <a class="brand-zone" href="#">
+            <div class="logo-icon">Z</div>
+            <span class="brand-text">ZONECLASS</span>
+        </a>
+
+        <button class="navbar-toggler" type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#navbarNav"
+                aria-controls="navbarNav"
+                aria-expanded="false"
+                aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
+
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
-                <li class="nav-item"><a class="nav-link" href="/admin/users">Users</a></li>
-                <li class="nav-item"><a class="nav-link" href="/login">Login</a></li>
+
+                <li class="nav-item">
+                    <a class="nav-link nav-link-custom" href="/admin/users">
+                        <i class="bi bi-people-fill me-1"></i>
+                        Users
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link nav-link-custom" href="/login">
+                        <i class="bi bi-box-arrow-in-right me-1"></i>
+                        Login
+                    </a>
+                </li>
+
             </ul>
         </div>
     </div>
 </nav>
 
-<header class="bg-primary text-white text-center py-5 mi-body">
+<header class="hero">
     <div class="container">
-        <h1 class="display-4">Welcome to Zone Class</h1>
-        <p class="lead">Course, user, and academic progress management</p>
-        
+
+        <span class="hero-badge">Plataforma Educativa</span>
+
+        <h1>
+            Welcome to <span>Zone Class</span>
+        </h1>
+
+        <p>
+            Course, user, and academic progress management.
+            Gestiona la plataforma educativa desde un espacio moderno,
+            claro y organizado.
+        </p>
+
     </div>
 </header>
 
-<div class="container my-5 ">
-    <div class="row text-center ">
-        <div class="col-md-4 mi_job">
-            <div class="card p-3 shadow">
-                <h3><i class="bi bi-people"></i> Users</h3>
-                <p>Manage registered users on the platform.</p>
-                <a href="/users" class="btn btn-dark">View Users</a>
-            </div>
-        </div>
-		
-        <div class="col-md-4 mi_job">
-            <div class="card p-3 shadow">
-                <h3><i class="bi bi-book"></i> Courses</h3>
-                <p>Manage available courses in Zone Class.</p>
-                <a href="/courses" class="btn btn-dark">View Courses</a>
-            </div>
-        </div>
+<section class="content-section">
 
-        <div class="col-md-4 mi_job">
-            <div class="card p-3 shadow">
-                <h3><i class="bi bi-journals"></i> Lessons</h3>
-                <p>Professional, engaging lessons to build skills and confidence at your own pace.</p>
-                <a href="/lessons" class="btn btn-dark">View lessions</a>
-            </div>
-        </div>
+    <div class="container">
 
-        <div class="col-md-4 mi_job">
-            <div class="card p-3 shadow">
-                <h3><i class="bi bi-journal-plus"></i> Registration</h3>
-                </p>Easy, flexible enrollment to start learning quickly.</p>
-                <a href="/enrollments" class="btn btn-dark">View registration</a>
+        <h2 class="section-title">Panel de gestión</h2>
+
+        <p class="section-description">
+            Selecciona una sección para administrar la información de Zone Class.
+        </p>
+
+        <div class="row g-4">
+
+            <div class="col-md-6 col-lg-4">
+                <div class="admin-card">
+                    <div class="card-icon">
+                        <i class="bi bi-people"></i>
+                    </div>
+
+                    <h3>Users</h3>
+
+                    <p>
+                        Manage registered users on the platform.
+                    </p>
+
+                    <a href="/users" class="btn-zone">
+                        View Users
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
             </div>
-        </div>
-        
-        <div class="row">
-    
-    <div class="col-md-4 offset-md-2 mi_job">
-        <div class="card p-3 shadow">
-            <h3><i class="bi bi-person-fill-check"></i> Certificates</h3>
-            <p>Certificates are official documents that verify education, skills, or compliance.</p>
-            <a href="/certificates" class="btn btn-dark">View certificates</a>
+
+            <div class="col-md-6 col-lg-4">
+                <div class="admin-card">
+                    <div class="card-icon">
+                        <i class="bi bi-book"></i>
+                    </div>
+
+                    <h3>Courses</h3>
+
+                    <p>
+                        Manage available courses in Zone Class.
+                    </p>
+
+                    <a href="/courses" class="btn-zone">
+                        View Courses
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-4">
+                <div class="admin-card">
+                    <div class="card-icon">
+                        <i class="bi bi-journals"></i>
+                    </div>
+
+                    <h3>Lessons</h3>
+
+                    <p>
+                        Professional, engaging lessons to build skills
+                        and confidence at your own pace.
+                    </p>
+
+                    <a href="/lessons" class="btn-zone">
+                        View Lessons
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-4">
+                <div class="admin-card">
+                    <div class="card-icon">
+                        <i class="bi bi-journal-plus"></i>
+                    </div>
+
+                    <h3>Registration</h3>
+
+                    <p>
+                        Easy, flexible enrollment to start learning quickly.
+                    </p>
+
+                    <a href="/enrollments" class="btn-zone">
+                        View Registration
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-4">
+                <div class="admin-card">
+                    <div class="card-icon">
+                        <i class="bi bi-person-fill-check"></i>
+                    </div>
+
+                    <h3>Certificates</h3>
+
+                    <p>
+                        Certificates are official documents that verify
+                        education, skills, or compliance.
+                    </p>
+
+                    <a href="/certificates" class="btn-zone">
+                        View Certificates
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-4">
+                <div class="admin-card">
+                    <div class="card-icon">
+                        <i class="bi bi-clipboard-check"></i>
+                    </div>
+
+                    <h3>Instructor Validation</h3>
+
+                    <p>
+                        Instructor validation is when an instructor confirms
+                        a student has met required skills or objectives.
+                    </p>
+
+                    <a href="/instructor_validation" class="btn-zone">
+                        View Validation
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+
         </div>
     </div>
 
-    <div class="col-md-4 mi_job">
-        <div class="card p-3 shadow">
-            <h3><i class="bi bi-clipboard-check"></i> Instructor Validation</h3>
-            <p>Instructor validation is when an instructor confirms a student has met required skills or objectives.</p>
-            <a href="/instructor_validation" class="btn btn-dark">View validation</a>
-        </div>
-    </div>
+</section>
 
-</div>
-
-    </div>
-</div>
-
-<footer class="bg-dark text-white text-center py-3">
+<footer class="footer-zone">
     <p>© 2026 Zone Class. All rights reserved.</p>
 </footer>
+
 </body>
 </html>

@@ -352,6 +352,32 @@
                 position: static;
             }
         }
+
+        .btn-delete {
+            width: 100%;
+            margin-top: 12px;
+            padding: 12px 20px;
+            border: 2px solid #9e2c9e;
+            border-radius: 14px;
+            background-color: #f3e8ff;
+            color: #ff2d6c;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+
+        .btn-delete:hover {
+            background-color: #ec1ba6;
+            color: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(124, 92, 219, 0.25);
+        }
+
     </style>
 </head>
 
@@ -366,13 +392,13 @@
 
         <ul class="nav-links">
             <li>
-                <a href="{{ url_for('profesor.insmiscursos') }}" class="nav-link-btn">
+                <a href="/insmiscursos" class="nav-link-btn">
                     <i class="bi bi-journal-bookmark-fill"></i>
                     Mis Cursos
                 </a>
             </li>
             <li>
-                <a href="{{ url_for('profesor.instruprofile') }}" class="nav-link-btn">
+                <a href="/instruprofile" class="nav-link-btn">
                     <i class="bi bi-person-circle"></i>
                     Perfil
                 </a>
@@ -407,6 +433,12 @@
                             <i class="bi bi-pencil-square me-2"></i>
                             Editar Lección
                         </a>
+                        <form action="{{url_for('profesor.delete_lesson', id=leccion.id)}}" method="POST" style="display: inline;">
+                                <BUtton type="submit" class="btn-delete"
+                                    onclick="return confirm('¿ seguro que deseas eliminar esta lección?')">
+                                    <i class="bi bi-trash-fill"></i>Delete
+                                </BUtton>
+                        </form>
                 {% endif %}
             </article>
 
@@ -430,7 +462,7 @@
                             </div>
                         </div>
 
-                        <a href="{{ pdf.ruta }}" target="_blank" class="btn-download-pdf" title="Descargar/Ver PDF">
+                        <a href="{{ url_for('static', filename=pdf.ruta) }}" target="_blank "class="btn-download-pdf" title="Descargar/Ver PDF">
                             <i class="bi bi-download"></i>
                         </a>
                     </div>
