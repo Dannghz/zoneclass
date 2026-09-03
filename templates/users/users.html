@@ -1,110 +1,335 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="es">
 
 <head>
     <meta charset="UTF-8">
-    <title>Users</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZoneClass | Lista de Estudiantes</title>
+    <!-- Bootstrap 5.3 y Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{url_for('static', filename='css/main.css')}}">
-    <link rel="stylesheet" type="" href="{{url_for('static', filename='css/main.css')}}">
 
+    <style>
+        :root {
+            --sidebar-width: 260px;
+            --primary-pastel: #a855f7;       /* Morado pastel suave principal */
+            --primary-pastel-hover: #9333ea;
+            --pastel-bg-light: #faf5ff;       /* Fondo suave */
+            --pastel-card-glow: #e9d5ff;     /* Resplandor pastel para el cuadro */
+            --sidebar-bg: #2e1065;           /* Morado oscuro elegante para el menú */
+        }
+
+        /* FONDO GENERAL LISO Y SUAVE */
+        body.mi_body {
+            background-color: #f3f0ff;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            color: #334155;
+            overflow-y: auto; /* Scroll vertical fluido */
+        }
+
+        /* BARRA LATERAL (SIDEBAR) */
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: var(--sidebar-bg);
+            color: #ffffff;
+            padding: 1.5rem 1rem;
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+            box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+        }
+
+        .sidebar-brand {
+            font-size: 1.15rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+            margin-bottom: 1.5rem;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .sidebar a {
+            color: #d8b4fe;
+            text-decoration: none;
+            padding: 0.75rem 1rem;
+            border-radius: 0.6rem;
+            margin-bottom: 0.35rem;
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            font-weight: 500;
+            transition: all 0.25s ease;
+        }
+
+        .sidebar a:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            transform: translateX(4px);
+        }
+
+        .sidebar a.active {
+            background-color: var(--primary-pastel);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(168, 85, 247, 0.35);
+        }
+
+        /* ÁREA DE CONTENIDO PRINCIPAL */
+        .content {
+            margin-left: var(--sidebar-width);
+            padding: 2.5rem 3rem;
+            min-height: 100vh;
+        }
+
+        /* CUADRO DE INFORMACIÓN CON RESPLANDOR Y DEGRADADO MORADO PASTEL */
+        .card-custom {
+            background: #ffffff;
+            border: 1px solid #e9d5ff;
+            border-radius: 1.25rem;
+            /* Resplandor y degradado pastel saliendo directamente del cuadro */
+            box-shadow: 0 10px 35px rgba(168, 85, 247, 0.15), 
+                        0 0 50px rgba(233, 213, 255, 0.6);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        /* TABLA DE ESTUDIANTES */
+        .table {
+            margin-bottom: 0;
+            vertical-align: middle;
+        }
+
+        .table thead {
+            background-color: #f3e8ff;
+            color: #6b21a8;
+            font-size: 0.825rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .table thead th {
+            border-bottom: 2px solid #e9d5ff;
+            padding: 1rem 1.25rem;
+            font-weight: 700;
+        }
+
+        .table tbody td {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid #f3e8ff;
+            color: #334155;
+            font-size: 0.95rem;
+        }
+
+        .table tbody tr:hover {
+            background-color: #faf5ff;
+        }
+
+        /* BOTONES CON MORADO PASTEL */
+        .btn-pastel-primary {
+            background-color: var(--primary-pastel);
+            color: #ffffff;
+            border: none;
+            transition: all 0.2s ease;
+        }
+
+        .btn-pastel-primary:hover {
+            background-color: var(--primary-pastel-hover);
+            color: #ffffff;
+            box-shadow: 0 4px 14px rgba(147, 51, 234, 0.3);
+        }
+
+        /* BADGES DE ROL */
+        .badge-role {
+            font-weight: 600;
+            padding: 0.35em 0.8em;
+            border-radius: 30px;
+            font-size: 0.8rem;
+        }
+
+        .btn-action {
+            width: 34px;
+            height: 34px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.4rem;
+            transition: all 0.2s;
+        }
+
+        .btn-action:hover {
+            transform: translateY(-2px);
+        }
+    </style>
 </head>
 
 <body class="mi_body">
 
-    <!-- SIDEBAR -->
-    <div class="sidebar">
-
-        <h4 class="text-start mb-4">
-            <i class="bi bi-gear-wide"></i> ZONECLASS <br> ADMIN
-        </h4>
- 
-        <a href="/admin" >
-            <i class="bi bi-house"></i> <strong>Back to menu</strong>
-        </a>
-
-        <a href="/courses" >
-            <i class="bi bi-book"></i> <strong>Courses</strong>
-        </a>
-
-        <a href="/lessons">
-            <i class="bi bi-journals"></i> <strong>Lessons</strong>
-        </a>
-
-        <a href="/enrollments" >
-            <i class="bi bi-journal-plus"></i> <strong>Enrollments</strong>
-        </a>
-
-        <a href="/instructor_validation" >
-            <i class="bi bi-clipboard-check"></i><strong>Instructor validation</strong>
-        </a>
-
-
-        <a href="/certificates">
-            <i class="bi bi-person-fill-check"></i> <strong>Certificates</strong>
-        </a>
-
-    </div>
-
-    <div class="content">
-
-        <div class="container py-5">
-           
-            <h1 class="text-center mb-4"><strong>Users List</strong></h1>
-
-            <div class="d-flex justify-content-between mb-3">
-                <h3>Users List</h3>
-
-                <a href="{{url_for('add_user')}}" class="btn btn-dark">
-                    <i class="bi bi-file-plus"></i> New user
-                </a>
+    <!-- BARRA LATERAL (SIDEBAR) -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <i class="bi bi-gear-wide-connected text-warning fs-3"></i>
+            <div>
+                <span>ZONECLASS</span>
+                <small class="d-block text-white-50 fw-normal" style="font-size: 0.75rem;">PANEL DE CONTROL</small>
             </div>
-
-            <table class="table table-bordered table-striped">
-                <thead class="table-dark text-center">
-                    <tr>
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>Age</th>
-                        <th>Email</th>
-                        <th>Role</th>
-                        <th>Registration Date</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {%for dataCol in data %}
-                    <tr class="text-center">
-                        <td>{{dataCol.id}}</td>
-                        <td>{{dataCol.nombre}}</td>
-                        <td>{{dataCol.edad}}</td>
-                        <td>{{dataCol.email}}</td>
-                        <td>{{dataCol.rol}}</td>
-                        <td>{{dataCol.fecha_registro}}</td>
-                        <td>
-                            <a href="{{ url_for('edit_user', id=dataCol.id) }}" class="btn btn-warning">
-                                Editar
-                            </a>
-
-                            <form action="{{url_for('deleteUS',id=dataCol.id)}}" method="POST" style="display: inline;">
-                                <BUtton type="submit" class="btn btn-danger btn-sm"
-                                    onclick="return confirm('¿ seguro que deseas eliminar este usuario?')">
-                                    <i class="bi bi-trash-fill"></i>Delete
-                                </BUtton>
-                            </form>
-                        </td>
-                    </tr>
-                </tbody>
-                {% endfor %}
-                </tbody>
-
-
-            </table>
-
         </div>
 
-    </div>
+        <nav class="w-100">
+            <!-- Volver al menú principal -->
+            <a href="/admin">
+                <i class="bi bi-arrow-left-circle fs-5"></i>
+                <span>Volver al Menú</span>
+            </a>
+
+            <!-- Módulo Estudiantes (Activo) -->
+            <a href="#" class="active">
+                <i class="bi bi-people-fill fs-5"></i>
+                <span>Estudiantes</span>
+            </a>
+
+            <!-- Módulo Cursos -->
+            <a href="/courses">
+                <i class="bi bi-book fs-5"></i>
+                <span>Cursos</span>
+            </a>
+
+            <!-- Módulo Lecciones -->
+            <a href="/lessons">
+                <i class="bi bi-journals fs-5"></i>
+                <span>Lecciones</span>
+            </a>
+
+            <!-- Módulo Inscripciones -->
+            <a href="/enrollments">
+                <i class="bi bi-journal-plus fs-5"></i>
+                <span>Inscripciones</span>
+            </a>
+
+            <!-- Módulo Archivos PDF -->
+            <a href="#">
+                <i class="bi bi-file-earmark-pdf-fill fs-5 text-danger-subtle"></i>
+                <span>Archivos PDF</span>
+            </a>
+
+            <!-- Módulo Profesor -->
+            <a href="#">
+                <i class="bi bi-mortarboard-fill fs-5 text-info-subtle"></i>
+                <span>Profesor</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- CONTENIDO PRINCIPAL (PERMITE SCROLL COMPLETO) -->
+    <main class="content">
+
+        <!-- CABECERA DE LA PÁGINA -->
+        <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom border-purple-subtle">
+            <div>
+                <h2 class="fw-bold mb-1" style="color: #581c87;">Gestión de Estudiantes</h2>
+                <p class="text-muted mb-0">Administra la información de los estudiantes registrados en ZoneClass.</p>
+            </div>
+
+            <!-- Botón Nuevo Estudiante -->
+            <a href="{{ url_for('add_user') }}" class="btn btn-pastel-primary d-flex align-items-center gap-2 px-3 py-2 rounded-3 shadow-sm">
+                <i class="bi bi-person-plus-fill fs-5"></i>
+                <span class="fw-semibold">Nuevo Estudiante</span>
+            </a>
+        </div>
+
+        <!-- TARJETA CONTENEDORA DE ESTUDIANTES CON RESPLANDOR PASTEL -->
+        <div class="card card-custom mb-5">
+            <div class="card-header bg-white border-0 py-3 px-4 d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold mb-0" style="color: #6b21a8;">Lista de Estudiantes</h5>
+                <span class="badge border px-3 py-2 rounded-pill" style="color: #6b21a8; background-color: #f3e8ff; border-color: #e9d5ff !important;">
+                    Total: {{ data|length }} estudiante(s)
+                </span>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th class="text-center">ID</th>
+                            <th>Nombre</th>
+                            <th class="text-center">Edad</th>
+                            <th>Correo Electrónico</th>
+                            <th class="text-center">Rol</th>
+                            <th class="text-center">Fecha de Registro</th>
+                            <th class="text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for dataCol in data %}
+                        <tr>
+                            <td class="text-center fw-bold" style="color: #8b5cf6;">#{{ dataCol.id }}</td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold" 
+                                         style="width: 36px; height: 36px; font-size: 0.9rem; background-color: #f3e8ff; color: #6b21a8;">
+                                        {{ dataCol.nombre[0] | upper if dataCol.nombre else 'E' }}
+                                    </div>
+                                    <span class="fw-semibold text-dark">{{ dataCol.nombre }}</span>
+                                </div>
+                            </td>
+                            <td class="text-center">{{ dataCol.edad }}</td>
+                            <td class="text-muted">{{ dataCol.email }}</td>
+                            <td class="text-center">
+                                {% if dataCol.rol == 'admin' %}
+                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle badge-role">Administrador</span>
+                                {% elif dataCol.rol == 'profesor' %}
+                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle badge-role">Profesor</span>
+                                {% else %}
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle badge-role">{{ dataCol.rol | capitalize }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center text-muted small">{{ dataCol.fecha_registro }}</td>
+                            <td class="text-center">
+                                <div class="d-flex justify-content-center gap-2">
+                                    <!-- Editar -->
+                                    <a href="{{ url_for('edit_user', id=dataCol.id) }}" 
+                                       class="btn btn-sm btn-outline-warning btn-action" 
+                                       title="Editar Estudiante">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </a>
+
+                                    <!-- Eliminar -->
+                                    <form action="{{ url_for('deleteUS', id=dataCol.id) }}" method="POST" class="d-inline">
+                                        <button type="submit" 
+                                                class="btn btn-sm btn-outline-danger btn-action" 
+                                                title="Eliminar Estudiante"
+                                                onclick="return confirm('¿Seguro que deseas eliminar a este estudiante?')">
+                                            <i class="bi bi-trash-fill"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center py-5 text-muted">
+                                <i class="bi bi-people fs-1 d-block mb-2" style="color: #c4b5fd;"></i>
+                                No hay estudiantes registrados actualmente.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- JS de Bootstrap -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>

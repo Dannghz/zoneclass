@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Solicitud para profesor</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f4f6f9;
+            color: #1f2937;
+        }
+
+        .contenedor {
+            width: 100%;
+            max-width: 750px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        .volver {
+            display: inline-block;
+            margin-bottom: 20px;
+            text-decoration: none;
+            color: #4f46e5;
+            font-weight: bold;
+        }
+
+        .volver:hover {
+            text-decoration: underline;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 35px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        }
+
+        h1 {
+            margin-top: 0;
+            color: #111827;
+        }
+
+        .descripcion {
+            color: #6b7280;
+            margin-bottom: 30px;
+        }
+
+        .campo {
+            margin-bottom: 22px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        input[type="text"],
+        select,
+        input[type="file"] {
+
+            width: 100%;
+            padding: 12px;
+
+            border: 1px solid #d1d5db;
+
+            border-radius: 8px;
+
+            font-size: 15px;
+
+        }
+
+        input[type="text"]:focus,
+        select:focus {
+
+            outline: none;
+
+            border-color: #4f46e5;
+
+        }
+
+        .obligatorio {
+            color: #dc2626;
+        }
+
+        .errores {
+
+            background: #fee2e2;
+
+            color: #991b1b;
+
+            border-radius: 10px;
+
+            padding: 15px;
+
+            margin-bottom: 20px;
+
+        }
+
+        .errores ul {
+
+            margin: 0;
+
+            padding-left: 20px;
+
+        }
+
+        .archivo-info {
+
+            background: #f8fafc;
+
+            border: 1px solid #e2e8f0;
+
+            border-radius: 10px;
+
+            padding: 18px;
+
+        }
+
+        .archivo-info p {
+
+            margin-top: 5px;
+
+            color: #64748b;
+
+            font-size: 14px;
+
+        }
+
+        .botones {
+
+            display: flex;
+
+            gap: 12px;
+
+            justify-content: flex-end;
+
+            margin-top: 30px;
+
+        }
+
+        .btn {
+
+            border: none;
+
+            padding: 12px 22px;
+
+            border-radius: 8px;
+
+            font-size: 15px;
+
+            font-weight: bold;
+
+            cursor: pointer;
+
+            text-decoration: none;
+
+        }
+
+        .btn-volver {
+
+            background: #e5e7eb;
+
+            color: #374151;
+
+        }
+
+        .btn-enviar {
+
+            background: #4f46e5;
+
+            color: white;
+
+        }
+
+        .btn-enviar:hover {
+
+            background: #4338ca;
+
+        }
+
+        @media (max-width: 600px) {
+
+            .contenedor {
+
+                margin: 20px auto;
+
+            }
+
+            .card {
+
+                padding: 22px;
+
+            }
+
+            .botones {
+
+                flex-direction: column-reverse;
+
+            }
+
+            .btn {
+
+                width: 100%;
+
+                text-align: center;
+
+            }
+
+        }
+
+        .postulacion-existente {
+
+            text-align: center;
+
+            background: #fef3c7;
+
+            border: 1px solid #f59e0b;
+
+            padding: 30px;
+
+            border-radius: 12px;
+
+        }
+
+        .postulacion-existente h2 {
+
+            color: #92400e;
+
+            margin-bottom: 10px;
+
+        }
+
+        .postulacion-existente p {
+
+            color: #78350f;
+
+            margin-bottom: 20px;
+
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div class="contenedor">
+
+        <!-- BOTÓN VOLVER ATRÁS -->
+        {% if ya_postulado %}
+
+        <div class="postulacion-existente">
+
+            <h2>Ya enviaste una postulación</h2>
+
+            <p>
+                Ya tienes una solicitud registrada.
+                No puedes postularte nuevamente.
+            </p>
+
+            <a href="javascript:history.back()" class="btn btn-volver">
+                ← Volver atrás
+            </a>
+
+        </div>
+
+        {% else %}
+
+        <a href="javascript:history.back()" class="volver">
+            ← Volver atrás
+        </a>
+
+
+        <div class="card">
+
+            <h1>Solicitud para ser profesor</h1>
+
+            <p class="descripcion">
+
+                Completa la siguiente información y adjunta
+                los documentos solicitados en formato PDF.
+
+            </p>
+
+
+            <!-- MOSTRAR ERRORES -->
+
+            {% if errores %}
+
+            <div class="errores">
+
+                <strong>
+                    Revisa los siguientes errores:
+                </strong>
+
+                <ul>
+
+                    {% for error in errores %}
+
+                    <li>{{ error }}</li>
+
+                    {% endfor %}
+
+                </ul>
+
+            </div>
+
+            {% endif %}
+
+
+            <!-- FORMULARIO -->
+
+
+            <form action="{{ url_for('estudiante.profesor') }}" method="POST" enctype="multipart/form-data">
+
+
+                <!-- TÍTULO OBTENIDO -->
+
+                <div class="campo">
+
+                    <label for="titulo_obtenido">
+
+                        Título obtenido
+
+                        <span class="obligatorio">*</span>
+
+                    </label>
+
+                    <input type="text" id="titulo_obtenido" name="titulo_obtenido"
+                        placeholder="Ejemplo: Ingeniero de Sistemas"
+                        value="{{ profesor.titulo_obtenido if profesor else '' }}" required>
+
+                </div>
+
+
+                <!-- INSTITUCIÓN -->
+
+                <div class="campo">
+
+                    <label for="institucion_educativa">
+
+                        Institución educativa
+
+                        <span class="obligatorio">*</span>
+
+                    </label>
+
+                    <input type="text" id="institucion_educativa" name="institucion_educativa"
+                        placeholder="Nombre de la institución"
+                        value="{{ profesor.institucion_educativa if profesor else '' }}" required>
+
+                </div>
+
+
+                <!-- NIVEL DE ESTUDIOS -->
+
+                <div class="campo">
+
+                    <label for="nivel_estudios">
+
+                        Nivel de estudios
+
+                        <span class="obligatorio">*</span>
+
+                    </label>
+
+                    <select id="nivel_estudios" name="nivel_estudios" required>
+
+                        <option value="">
+                            Selecciona una opción
+                        </option>
+
+                        <option value="Técnico" {% if profesor and profesor.nivel_estudios=="Técnico" %} selected {%
+                            endif %}>
+                            Técnico
+                        </option>
+
+                        <option value="Tecnólogo" {% if profesor and profesor.nivel_estudios=="Tecnólogo" %} selected {%
+                            endif %}>
+                            Tecnólogo
+                        </option>
+
+                        <option value="Profesional" {% if profesor and profesor.nivel_estudios=="Profesional" %}
+                            selected {% endif %}>
+                            Profesional
+                        </option>
+
+                        <option value="Especialización" {% if profesor and profesor.nivel_estudios=="Especialización" %}
+                            selected {% endif %}>
+                            Especialización
+                        </option>
+
+                        <option value="Maestría" {% if profesor and profesor.nivel_estudios=="Maestría" %} selected {%
+                            endif %}>
+                            Maestría
+                        </option>
+
+                        <option value="Doctorado" {% if profesor and profesor.nivel_estudios=="Doctorado" %} selected {%
+                            endif %}>
+                            Doctorado
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- DIPLOMA PDF -->
+
+                <div class="campo">
+
+                    <div class="archivo-info">
+
+                        <label for="ruta_diploma_pdf">
+
+                            Diploma
+
+                            <span class="obligatorio">*</span>
+
+                        </label>
+
+                        <p>
+                            Adjunta tu diploma en formato PDF.
+                            Máximo recomendado: 10 MB.
+                        </p>
+
+                        <input type="file" id="ruta_diploma_pdf" name="ruta_diploma_pdf" accept=".pdf,application/pdf"
+                            required>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ACTA PDF -->
+
+                <div class="campo">
+
+                    <div class="archivo-info">
+
+                        <label for="ruta_acta_pdf">
+
+                            Acta
+
+                            <span class="obligatorio">*</span>
+
+                        </label>
+
+                        <p>
+                            Adjunta el acta correspondiente
+                            en formato PDF.
+                            Máximo recomendado: 10 MB.
+                        </p>
+
+                        <input type="file" id="ruta_acta_pdf" name="ruta_acta_pdf" accept=".pdf,application/pdf"
+                            required>
+
+                    </div>
+
+                </div>
+
+
+                <!-- BOTONES -->
+
+                <div class="botones">
+
+                    <a href="javascript:history.back()" class="btn btn-volver">
+                        Cancelar
+                    </a>
+
+                    <button type="submit" class="btn btn-enviar">
+                        Enviar solicitud
+                    </button>
+
+                </div>
+
+
+            </form>
+            {% endif %}
+        </div>
+
+    </div>
+
+</body>
+
+</html>

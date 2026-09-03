@@ -424,4 +424,916 @@ body{
         .btn-course:hover{
             transform: scale(1.02);
         }
+/* ================================
+   IMPORTAR FUENTE
+================================ */
 
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+
+/* ================================
+   RESET
+================================ */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+
+body {
+    font-family: 'Poppins', sans-serif;
+
+    min-height: 100vh;
+
+    background: #e9eaed;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 30px;
+
+    overflow-x: hidden;
+}
+
+
+/* ================================
+   CONTENEDOR GENERAL
+================================ */
+
+.page-container {
+    width: 100%;
+    max-width: 1200px;
+}
+
+
+/* ================================
+   TARJETA PRINCIPAL
+================================ */
+
+.split-container {
+
+    width: 100%;
+    min-height: 620px;
+
+    display: flex;
+
+    background: #ffffff;
+
+    border-radius: 28px;
+
+    overflow: hidden;
+
+    box-shadow:
+        0 20px 50px rgba(40, 40, 70, 0.12);
+
+}
+
+
+/* ================================
+   LADO IZQUIERDO
+================================ */
+
+.left-side {
+
+    width: 52%;
+
+    background: #ffffff;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 55px;
+
+}
+
+
+.login-content {
+
+    width: 100%;
+    max-width: 440px;
+
+}
+
+
+/* ================================
+   LOGO
+================================ */
+
+.brand {
+
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+
+    margin-bottom: 55px;
+
+}
+
+
+.logo-icon {
+
+    width: 48px;
+    height: 48px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: linear-gradient(
+        135deg,
+        #6866d9,
+        #4f4ab5
+    );
+
+    color: white;
+
+    border-radius: 12px;
+
+    font-size: 22px;
+    font-weight: 700;
+
+    box-shadow:
+        0 8px 20px rgba(91, 83, 211, 0.25);
+
+}
+
+
+.brand span {
+
+    font-size: 18px;
+
+    font-weight: 700;
+
+    letter-spacing: 1.5px;
+
+    color: #3f4050;
+
+}
+
+
+/* ================================
+   TITULO
+================================ */
+
+.login-header {
+
+    margin-bottom: 35px;
+
+}
+
+
+.login-header h2 {
+
+    font-size: 30px;
+
+    font-weight: 700;
+
+    color: #343544;
+
+    margin-bottom: 8px;
+
+}
+
+
+.login-header p {
+
+    color: #8a8b97;
+
+    font-size: 14px;
+
+}
+
+
+/* ================================
+   INPUTS
+================================ */
+
+.input-group {
+
+    margin-bottom: 22px;
+
+}
+
+
+.input-group label {
+
+    display: block;
+
+    margin-bottom: 10px;
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+    color: #4b4b57;
+
+}
+
+
+.input-container {
+
+    width: 100%;
+    height: 58px;
+
+    position: relative;
+
+    display: flex;
+    align-items: center;
+
+    border-radius: 12px;
+
+    background: #f7f7fb;
+
+    border: 1px solid #ececf4;
+
+    transition:
+        border 0.3s ease,
+        box-shadow 0.3s ease,
+        transform 0.3s ease;
+
+}
+
+
+.input-container:focus-within {
+
+    border-color: #6b63dc;
+
+    box-shadow:
+        0 0 0 4px rgba(107, 99, 220, 0.10);
+
+    transform: translateY(-1px);
+
+}
+
+
+/* ICONO INPUT */
+
+.input-icon {
+
+    position: absolute;
+
+    left: 18px;
+
+    color: #7d7e91;
+
+    font-size: 15px;
+
+}
+
+
+/* INPUT */
+
+.input-container input {
+
+    width: 100%;
+    height: 100%;
+
+    border: none;
+    outline: none;
+
+    background: transparent;
+
+    padding-left: 48px;
+    padding-right: 50px;
+
+    font-family: inherit;
+
+    font-size: 14px;
+
+    color: #3f4050;
+
+}
+
+
+.input-container input::placeholder {
+
+    color: #b2b2bd;
+
+}
+
+
+/* ================================
+   BOTON VER CONTRASEÑA
+================================ */
+
+.toggle-password {
+
+    position: absolute;
+
+    right: 12px;
+
+    width: 38px;
+    height: 38px;
+
+    border: none;
+
+    background: transparent;
+
+    border-radius: 50%;
+
+    color: #716bd1;
+
+    cursor: pointer;
+
+    font-size: 17px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    transition:
+        background 0.25s ease,
+        color 0.25s ease,
+        transform 0.25s ease;
+
+}
+
+
+/* HOVER */
+
+.toggle-password:hover {
+
+    background: rgba(108, 99, 220, 0.12);
+
+    color: #554ec8;
+
+}
+
+
+/* ANIMACION AL PULSAR */
+
+.toggle-password.active {
+
+    animation: eyeAnimation 0.25s ease;
+
+}
+
+
+@keyframes eyeAnimation {
+
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(0.75) rotate(-12deg);
+    }
+
+    100% {
+        transform: scale(1) rotate(0deg);
+    }
+
+}
+
+
+/* ================================
+   BOTON INGRESAR
+================================ */
+
+.btn-submit {
+
+    width: 100%;
+    height: 58px;
+
+    margin-top: 8px;
+
+    border: none;
+
+    border-radius: 12px;
+
+    background: linear-gradient(
+        90deg,
+        #5f5bd1,
+        #7773e5
+    );
+
+    color: white;
+
+    font-family: inherit;
+
+    font-size: 15px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 10px;
+
+    box-shadow:
+        0 10px 25px rgba(95, 91, 209, 0.25);
+
+    transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease;
+
+}
+
+
+.btn-submit:hover {
+
+    transform: translateY(-3px);
+
+    box-shadow:
+        0 15px 30px rgba(95, 91, 209, 0.35);
+
+}
+
+
+.btn-submit:active {
+
+    transform: scale(0.97);
+
+}
+
+
+/* ================================
+   REGISTRO
+================================ */
+
+.register-text {
+
+    margin-top: 25px;
+
+    text-align: center;
+
+    font-size: 13px;
+
+    color: #8c8c97;
+
+}
+
+
+.register-text a {
+
+    color: #5e58ca;
+
+    font-weight: 600;
+
+    text-decoration: none;
+
+    margin-left: 4px;
+
+}
+
+
+.register-text a:hover {
+
+    text-decoration: underline;
+
+}
+
+
+/* ================================
+   OLVIDASTE CONTRASEÑA
+================================ */
+
+.forgot-password {
+
+    margin-top: 16px;
+
+    text-align: center;
+
+}
+
+
+.forgot-password a {
+
+    color: #6a63d7;
+
+    text-decoration: none;
+
+    font-size: 13px;
+
+    transition: color 0.2s ease;
+
+}
+
+
+.forgot-password a:hover {
+
+    color: #4e48b9;
+
+    text-decoration: underline;
+
+}
+
+
+/* ================================
+   LADO DERECHO
+================================ */
+
+.right-side {
+
+    width: 48%;
+
+    position: relative;
+
+    overflow: hidden;
+
+    display: flex;
+    align-items: center;
+
+    padding: 60px;
+
+    background:
+
+        linear-gradient(
+            135deg,
+            #4f4bb9 0%,
+            #5e59cf 50%,
+            #6f6bdb 100%
+        );
+
+}
+
+
+/* ================================
+   FIGURAS CIRCULARES
+================================ */
+
+.circle {
+
+    position: absolute;
+
+    border-radius: 50%;
+
+    background:
+        rgba(255, 255, 255, 0.06);
+
+    pointer-events: none;
+
+}
+
+
+/* CIRCULO GRANDE ARRIBA */
+
+.circle-1 {
+
+    width: 270px;
+    height: 270px;
+
+    top: -120px;
+    right: -80px;
+
+}
+
+
+/* CIRCULO CENTRAL */
+
+.circle-2 {
+
+    width: 190px;
+    height: 190px;
+
+    bottom: -80px;
+    left: -70px;
+
+    background:
+        rgba(255, 255, 255, 0.04);
+
+}
+
+
+/* CIRCULO PEQUEÑO */
+
+.circle-3 {
+
+    width: 90px;
+    height: 90px;
+
+    top: 130px;
+    right: 80px;
+
+    background:
+        rgba(255, 255, 255, 0.03);
+
+}
+
+
+/* ================================
+   CONTENIDO MORADO
+================================ */
+
+.info-content {
+
+    position: relative;
+
+    z-index: 2;
+
+    color: white;
+
+    max-width: 470px;
+
+}
+
+
+/* ICONO */
+
+.graduation-icon {
+
+    width: 58px;
+    height: 58px;
+
+    margin-bottom: 28px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 16px;
+
+    background:
+        rgba(255, 255, 255, 0.12);
+
+    border:
+        1px solid rgba(255, 255, 255, 0.15);
+
+    font-size: 24px;
+
+    backdrop-filter: blur(10px);
+
+}
+
+
+/* TITULO */
+
+.info-content h1 {
+
+    font-size: 38px;
+
+    line-height: 1.15;
+
+    margin-bottom: 22px;
+
+    font-weight: 700;
+
+}
+
+
+.info-content h1 span {
+
+    color: #ffffff;
+
+}
+
+
+/* PARRAFO */
+
+.info-content p {
+
+    font-size: 14px;
+
+    line-height: 1.9;
+
+    color:
+        rgba(255, 255, 255, 0.80);
+
+    margin-bottom: 35px;
+
+}
+
+
+/* ================================
+   CARACTERISTICAS
+================================ */
+
+.features {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 18px;
+
+}
+
+
+.feature {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 13px;
+
+}
+
+
+.check {
+
+    width: 28px;
+    height: 28px;
+
+    min-width: 28px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background:
+        rgba(255, 255, 255, 0.10);
+
+    color: white;
+
+    font-size: 11px;
+
+}
+
+
+.feature span {
+
+    font-size: 13px;
+
+    color:
+        rgba(255, 255, 255, 0.82);
+
+}
+
+
+/* ================================
+   RESPONSIVE - TABLET
+================================ */
+
+@media screen and (max-width: 900px) {
+
+    .split-container {
+
+        flex-direction: column-reverse;
+
+        max-width: 600px;
+
+    }
+
+
+    .left-side,
+    .right-side {
+
+        width: 100%;
+
+    }
+
+
+    .right-side {
+
+        min-height: 480px;
+
+    }
+
+
+}
+
+
+/* ================================
+   RESPONSIVE - MOVIL
+================================ */
+
+@media screen and (max-width: 600px) {
+
+    body {
+
+        padding: 15px;
+
+    }
+
+
+    .split-container {
+
+        border-radius: 20px;
+
+    }
+
+
+    .left-side {
+
+        padding: 35px 25px;
+
+    }
+
+
+    .right-side {
+
+        padding: 45px 30px;
+
+        min-height: auto;
+
+    }
+
+
+    .brand {
+
+        margin-bottom: 40px;
+
+    }
+
+
+    .login-header h2 {
+
+        font-size: 26px;
+
+    }
+
+
+    .info-content h1 {
+
+        font-size: 31px;
+
+    }
+
+
+    .circle-1 {
+
+        width: 220px;
+        height: 220px;
+
+    }
+    
+
+}
+/* ================================
+   BOTÓN IR ATRÁS
+================================ */
+
+/* ================================
+   BOTÓN IR ATRÁS
+================================ */
+
+.btn-back {
+
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    margin-bottom: 30px;
+
+    text-decoration: none;
+
+    color: #6a63d7;
+
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+
+    cursor: pointer;
+
+    padding: 8px 12px;
+
+    border-radius: 10px;
+
+    transition:
+        background 0.25s ease,
+        transform 0.25s ease,
+        color 0.25s ease;
+
+}
+
+
+.btn-back:hover {
+
+    background: rgba(106, 99, 215, 0.10);
+
+    color: #4e48b9;
+
+}
+
+
+.btn-back:hover i {
+
+    animation: arrowBack 0.5s ease;
+
+}
+
+
+.btn-back:active {
+
+    transform: scale(0.95);
+
+}
+
+
+/* Animación de la flecha */
+
+@keyframes arrowBack {
+
+    0% {
+        transform: translateX(0);
+    }
+
+    50% {
+        transform: translateX(-6px);
+    }
+
+    100% {
+        transform: translateX(0);
+    }
+
+}

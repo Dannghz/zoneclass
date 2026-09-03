@@ -18,9 +18,9 @@
       <div class="card-header">
         <h3>
           {% if nota_lesson %}
-          Editar nota
+          Editar registro
           {% else %}
-          Nuevo nota
+          Nuevo registro
           {% endif %}
         </h3>
       </div>
@@ -31,9 +31,9 @@
           method="POST">
           <!-- ID Estudiante -->
           <div class="mb-3">
-            <select name="usuario_id" class="form-control select-usuario">
+            <select name="estudiante_id" class="form-control select-usuario">
               {% for user in users %}
-              <option value="{{ user.id }}" {% if nota_lesson and nota_lesson.usuario_id==user.id %}selected{% endif %}>
+              <option value="{{ user.id }}" {% if nota_lesson and nota_lesson.estudiante_id==user.id %}selected{% endif %}>
                 {{ user.id }} - {{ user.nombre }}
               </option>
               {% endfor %}
@@ -53,17 +53,8 @@
           </div>
 
           <!-- Estado -->
-          <div class="mb-3">
-            <label>Intereses Académicos</label>
-            <input type="text" class="form-control" name="intereses"
-              value="{{ nota_lesson.intereses if nota_lesson else '' }}" required />
-
-          <!-- Fecha -->
-          <div class="mb-3">
-            <label>Fecha inscripcion</label>
-            <input type="date" class="form-control" name="fecha_inscripcion"
-              value="{{ nota_lesson.fecha_inscripcion.strftime('%Y-%m-%d') if nota_lesson else '' }}" required />
-          </div>
+         
+         
 
 
           <!-- Botones -->

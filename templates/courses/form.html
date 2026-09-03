@@ -25,49 +25,76 @@
         <div class="card shadow-sm">
             <div class="card-body">{% if error %}
 
-                <div class="alert alert-danger">{{ error }}</div> 
-                {% endif %}<form
-                    action="{% if cursos %}{{ url_for('edit_course', id=curso.id) }}{% else %}{{ url_for('add_course') }}{% endif %}"
+                <div class="alert alert-danger">{{ error }}</div>
+                {% endif %}
+                <form
+                    action="{% if curso %}{{ url_for('edit_course', id=curso.id) }}{% else %}{{ url_for('add_course') }}{% endif %}"
                     method="POST">
-                    <div class="mb-3">
-                        <label class="form-label">Título del Curso</label><input type="text" class="form-control"
-                            name="titulo" placeholder="Ej: Programación en Java"
-                            value="{{ curso.titulo if curso else '' }}">
 
+                    ```
+                    <div class="mb-3">
+                        <label class="form-label">Título del Curso</label>
+
+                        <input type="text" class="form-control" name="titulo" placeholder="Ej: Programación en Java"
+                            value="{{ curso.titulo if curso else '' }}" required>
                     </div>
+
                     <div class="mb-3">
                         <label class="form-label">Descripción</label>
-                        <textarea class="form-control" rows="3"name="descripcion"placeholder="Descripción del curso">{{ curso.descripcion if curso else '' }}</textarea>
+
+                        <textarea class="form-control" rows="3" name="descripcion" placeholder="Descripción del curso"
+                            required>{{ curso.descripcion if curso else '' }}</textarea>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Contenido</label>
-                        <textarea class="form-control" rows="3" name="contenido" placeholder="Contenido del curso">{{ curso.contenido if curso else '' }}</textarea>
+
+                        <textarea class="form-control" rows="3" name="contenido" placeholder="Contenido del curso"
+                            required>{{ curso.contenido if curso else '' }}</textarea>
                     </div>
-                    
-                    <div class="mb-3"><label class="form-label">Instructor</label>
 
-                        <select name="profesor_id" class="form-control select-profesor">{% for profesor in profesores %}
+                    <div class="mb-3">
 
-                            <option value="{{ profesor.id }}" {% if curso and curso.profesor_id==profesor.id
-                                %}selected{% endif %}>{{ profesor.id }} - {{ profesor.nombre }}
+                        <label class="form-label">Instructor</label>
 
-                            </option>{% endfor %}
+                        <select name="profesor_id" class="form-control select-profesor" required>
+
+                            {% for profesor in profesores %}
+
+                            <option value="{{ profesor.id }}" {% if curso and curso.profesor_id==profesor.id %} selected
+                                {% endif %}>
+                                {{ profesor.id }} - {{ profesor.nombre }}
+                            </option>
+
+                            {% endfor %}
 
                         </select>
+
                     </div>
-                    <div class="mb-3"><label class="form-label">Fecha de creación</label>
 
-                        <input type="date" class="form-control" name="fecha_creacion"
-                            value="{{ curso.fecha_creacion.strftime('%Y-%m-%d') if curso else '' }}">
+                    <br>
 
-                    </div><br>
-                    <center><button type="submit" class="btn btn-primary">
-                            <i class="bi bi-check-circle"></i> Guardar
-                        </button><a href="/courses" class="btn btn-danger">
-                            <i class="bi bi-x-circle"></i> Cancelar
-                        </a></center>
+                    <center>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i>
+                            {% if curso %}
+                            Guardar cambios
+                            {% else %}
+                            Guardar
+                            {% endif %}
+                        </button>
+
+                        <a href="{{ url_for('courses') }}" class="btn btn-danger">
+                            <i class="bi bi-x-circle"></i>
+                            Cancelar
+                        </a>
+
+                    </center>
+                    ```
+
                 </form>
+
             </div>
         </div>
     </div>

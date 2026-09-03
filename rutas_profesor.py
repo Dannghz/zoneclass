@@ -10,16 +10,46 @@ from flask import current_app
 # 1. Creas el "pedazo" de aplicación (Blueprint)
 profesor_bp = Blueprint('profesor', __name__)
 
-@profesor_bp.route("/mostrar_foto/<int:id>")
-def mostrar_foto(id):
+@profesor_bp.route("/mostrar_foto/<int:profesor_id>")
+def mostrar_foto(profesor_id):
+    conexion = db.get_db()
+    cursor = conexion.cursor(dictionary=True)
 
-    cursor = db.conexion.cursor(dictionary=True)
+    # Consulta con JOIN usando el profesor_id
+    cursor.execute("""
+        SELECT estudiante.foto 
+        FROM profesor
+        INNER JOIN estudiante 
+            ON estudiante.id = profesor.estudiante_id
+        WHERE profesor.id = %s
+    """, (profesor_id,))
+
+    usuario = cursor.fetchone()
+    cursor.close()
+
+    if not usuario or not usuario["foto"]:
+        return "", 404
+
+    return Response(
+        usuario["foto"],
+        mimetype="image/jpeg"
+    )
+
+@profesor_bp.route("/mi_foto")
+def mi_foto():
+    conexion = db.get_db()
+    if "user_id" not in session:
+        return "", 401
+
+    estudiante_id = session["user_id"]
+
+    cursor = conexion.cursor(dictionary=True)
 
     cursor.execute("""
         SELECT foto
-        FROM usuarios
+        FROM estudiante
         WHERE id = %s
-    """, (id,))
+    """, (estudiante_id,))
 
     usuario = cursor.fetchone()
 
@@ -36,13 +66,13 @@ def mostrar_foto(id):
 
 @profesor_bp.route("/menuInstru")
 def menuInstru():
-
+    conexion = db.get_db()
     if "user_id" not in session:
         return redirect(url_for("login"))
 
-    usuario_id = session["user_id"]
+    profesor_id = session["user_id"]
 
-    cursor = db.conexion.cursor(dictionary=True)
+    cursor = conexion.cursor(dictionary=True)
 
     # 🔥 TODOS LOS CURSOS
     
@@ -52,7 +82,7 @@ def menuInstru():
         SELECT
     cursos.*,
     COUNT(DISTINCT lecciones.id) AS total_lecciones,
-    COUNT(DISTINCT inscripciones.usuario_id) AS total_estudiantes
+    COUNT(DISTINCT inscripciones.estudiante_id) AS total_estudiantes
         FROM cursos
     LEFT JOIN lecciones
     ON cursos.id = lecciones.curso_id
@@ -73,53 +103,61 @@ def menuInstru():
 
 @profesor_bp.route("/instruprofile")
 def instruprofile():
+    conexion = db.get_db()
 
     if "user_id" not in session:
         return redirect(url_for("login"))
+    
+    estudiante_id = session["user_id"]
+    cursor = conexion.cursor(dictionary=True)
 
-    usuario_id = session["user_id"]
-
-    cursor = db.conexion.cursor(dictionary=True)
-
-
-    # Datos del usuario
+    # Datos del perfil + Cursos creados como Profesor
     cursor.execute("""
-    SELECT
-        usuarios.id,
-        usuarios.foto,
-        usuarios.nombre,
-        usuarios.edad,
-        usuarios.email,
-        usuarios.intereses,
-        COUNT(cursos.id) AS total_cursos
-    FROM usuarios
-    LEFT JOIN cursos
-        ON usuarios.id = cursos.profesor_id
-    WHERE usuarios.id = %s
-    GROUP BY
-        usuarios.id,
-        usuarios.foto,
-        usuarios.nombre,
-        usuarios.edad,
-        usuarios.email,
-        usuarios.intereses
-""", (usuario_id,))
+        SELECT
+            estudiante.id,
+            estudiante.foto,
+            estudiante.nombre,
+            estudiante.edad,
+            estudiante.email,
+            estudiante.intereses,
+            COUNT(DISTINCT cursos.id) AS total_cursos
+        FROM estudiante
+        LEFT JOIN profesor 
+            ON estudiante.id = profesor.estudiante_id
+        LEFT JOIN cursos 
+            ON profesor.id = cursos.profesor_id
+        WHERE estudiante.id = %s
+        GROUP BY
+            estudiante.id,
+            estudiante.foto,
+            estudiante.nombre,
+            estudiante.edad,
+            estudiante.email,
+            estudiante.intereses
+    """, (estudiante_id,))
 
     usuario = cursor.fetchone()
 
     # Cursos inscritos
     cursor.execute("""
-        SELECT
-            cursos.*,
-            COUNT(DISTINCT lecciones.id) AS total_lecciones
-        FROM cursos
-        INNER JOIN inscripciones
-            ON cursos.id = inscripciones.curso_id
-        LEFT JOIN lecciones
-            ON cursos.id = lecciones.curso_id
-        WHERE inscripciones.usuario_id = %s
-        GROUP BY cursos.id
-    """, (usuario_id,))
+    SELECT
+        cursos.id,
+        cursos.titulo,
+        cursos.descripcion,
+        cursos.contenido,
+        COUNT(DISTINCT lecciones.id) AS total_lecciones
+    FROM cursos
+    INNER JOIN inscripciones
+        ON cursos.id = inscripciones.curso_id
+    LEFT JOIN lecciones
+        ON cursos.id = lecciones.curso_id
+    WHERE inscripciones.estudiante_id = %s
+    GROUP BY 
+        cursos.id,
+        cursos.titulo,
+        cursos.descripcion,
+        cursos.contenido
+""", (estudiante_id,))
 
     cursos = cursor.fetchall()
 
@@ -136,6 +174,7 @@ def instruprofile():
 #Edit profile-------------------------------------------------------------------------------------------------------#
 @profesor_bp.route("/insEditprofile/<int:id>", methods=["GET", "POST"])
 def insEditprofile(id):
+    conexion = db.get_db()
 
     if "user_id" not in session:
         return redirect(url_for("login"))
@@ -144,7 +183,7 @@ def insEditprofile(id):
     if session["user_id"] != id:
         return redirect(url_for("profile"))
 
-    cursor = db.conexion.cursor(dictionary=True)
+    cursor = conexion.cursor(dictionary=True)
 
     errores = []
 
@@ -232,7 +271,7 @@ def insEditprofile(id):
 
             cursor.execute("""
                 SELECT id
-                FROM usuarios
+                FROM estudiante
                 WHERE email = %s
                 AND id != %s
             """, (email, id))
@@ -242,7 +281,7 @@ def insEditprofile(id):
             if email_existente:
 
                 errores.append(
-                    "Ese correo electrónico ya está registrado por otro usuario."
+                    "Ese correo electrónico ya está registrado por otro estudiante."
                 )
 
         # =========================
@@ -331,7 +370,7 @@ def insEditprofile(id):
                     edad,
                     email,
                     intereses
-                FROM usuarios
+                FROM estudiante
                 WHERE id = %s
             """, (id,))
 
@@ -358,7 +397,7 @@ def insEditprofile(id):
         if foto_blob is not None:
 
             cursor.execute("""
-                UPDATE usuarios
+                UPDATE estudiante
                 SET
                     nombre = %s,
                     edad = %s,
@@ -378,7 +417,7 @@ def insEditprofile(id):
         else:
 
             cursor.execute("""
-                UPDATE usuarios
+                UPDATE estudiante
                 SET
                     nombre = %s,
                     edad = %s,
@@ -393,7 +432,7 @@ def insEditprofile(id):
                 id
             ))
 
-        db.conexion.commit()
+        conexion.commit()
 
         cursor.close()
 
@@ -411,7 +450,7 @@ def insEditprofile(id):
             edad,
             email,
             intereses
-        FROM usuarios
+        FROM estudiante
         WHERE id = %s
     """, (id,))
 
@@ -432,25 +471,43 @@ def insEditprofile(id):
 
 @profesor_bp.route("/insmiscursos")
 def insmiscursos():
-
-    if "user_id" not in session:
-        return redirect(url_for("login"))
-
-    usuario_id = session["user_id"]
-
-    cursor = db.conexion.cursor(dictionary=True)
-
-    cursor.execute("""
-        SELECT
-        cursos.*,
-        COUNT(DISTINCT lecciones.id) AS total_lecciones
-        FROM cursos
-        LEFT JOIN lecciones
-            ON cursos.id = lecciones.curso_id
-        WHERE cursos.profesor_id = %s
-        GROUP BY cursos.id
-        """, (usuario_id,),)
+    conexion = db.get_db()
+    cursor = conexion.cursor(dictionary=True)
     
+    if "user_id" not in session:
+            return redirect(url_for("login"))
+        
+    estudiante_id=session["user_id"]
+    
+    cursor.execute("""
+            SELECT id
+            FROM profesor 
+            WHERE estudiante_id = %s
+        """, (estudiante_id,))
+        
+    resultado=cursor.fetchone()
+        
+                # Validar que el estudiante verdaderamente sea profesor antes de insertar
+    if not resultado:
+            cursor.close()
+            return "No tienes un perfil de profesor verificado", 403
+        
+                # 2. Extraer el ID numérico
+                # Si usas cursor normal (tuplas):
+    profesor_id = resultado["id"]
+    
+    
+    cursor.execute("""
+            SELECT
+            cursos.*,
+            COUNT(DISTINCT lecciones.id) AS total_lecciones
+            FROM cursos
+            LEFT JOIN lecciones
+                ON cursos.id = lecciones.curso_id
+            WHERE cursos.profesor_id = %s
+            GROUP BY cursos.id
+            """, (profesor_id,),)
+        
     profe = cursor.fetchall()
     
     cursor.execute("""
@@ -462,9 +519,9 @@ def insmiscursos():
                 ON cursos.id = inscripciones.curso_id
             LEFT JOIN lecciones
                 ON cursos.id = lecciones.curso_id
-            WHERE inscripciones.usuario_id = %s
+            WHERE inscripciones.estudiante_id = %s
             GROUP BY cursos.id
-        """, (usuario_id,))
+        """, (estudiante_id,))
 
     cursos = cursor.fetchall()
 
@@ -478,13 +535,31 @@ def insmiscursos():
 #VistaCursos ----------------------------------------------------------------------------------------------------------#
 @profesor_bp.route("/CursosCreados")
 def cursosCreados():
+    conexion = db.get_db()
+    cursor = conexion.cursor(dictionary=True)
 
     if "user_id" not in session:
         return redirect(url_for("login"))
+    
+    estudiante_id=session["user_id"]
 
-    usuario_id = session["user_id"]
+    cursor.execute("""
+        SELECT id
+        FROM profesor 
+        WHERE estudiante_id = %s
+    """, (estudiante_id,))
+    
+    resultado=cursor.fetchone()
+    
+            # Validar que el estudiante verdaderamente sea profesor antes de insertar
+    if not resultado:
+        cursor.close()
+        return "No tienes un perfil de profesor verificado", 403
+    
+            # 2. Extraer el ID numérico
+            # Si usas cursor normal (tuplas):
+    profesor_id = resultado["id"]
 
-    cursor = db.conexion.cursor(dictionary=True)
 
     cursor.execute("""
         SELECT
@@ -495,7 +570,7 @@ def cursosCreados():
             ON cursos.id = lecciones.curso_id
         WHERE cursos.profesor_id = %s
         GROUP BY cursos.id
-        """, (usuario_id,),)
+        """, (profesor_id,),)
     
     profe = cursor.fetchall()
 
@@ -508,32 +583,51 @@ def cursosCreados():
 #VistaCursos ----------------------------------------------------------------------------------------------------------#
 @profesor_bp.route("/insviewcourse/<int:curso_id>")
 def insviewcourse(curso_id):
+    conexion = db.get_db()
 
     if "user_id" not in session:
         return redirect(url_for("login"))
 
-    usuario_id = session["user_id"]
+    estudiante_id = session["user_id"]
 
-    cursor = db.conexion.cursor(dictionary=True)
+    cursor = conexion.cursor(dictionary=True)
 
+    # 1. Traer la información del curso con los datos del profesor
     cursor.execute("""
-    SELECT
-        cursos.*,
-        usuarios.nombre AS profesor_nombre,
-        usuarios.foto AS profesor_foto
-    FROM cursos
-    INNER JOIN usuarios
-        ON usuarios.id = cursos.profesor_id
-    WHERE cursos.id = %s
-""", (curso_id,))
+        SELECT
+            cursos.*,
+            estudiante.nombre AS profesor_nombre,
+            estudiante.foto AS profesor_foto
+        FROM cursos
+        LEFT JOIN profesor
+            ON profesor.id = cursos.profesor_id
+        LEFT JOIN estudiante
+            ON estudiante.id = profesor.estudiante_id
+        WHERE cursos.id = %s
+    """, (curso_id,))
 
     curso = cursor.fetchone()
 
-    if curso is None:
-        cursor.close()
-        return "Curso no encontrado", 404
+    # 2. Buscar si el usuario actual en sesión tiene un perfil de profesor
+    cursor.execute("""
+        SELECT id
+        FROM profesor 
+        WHERE estudiante_id = %s
+    """, (estudiante_id,))
 
-    puede_editar = curso["profesor_id"] == usuario_id
+    resultado = cursor.fetchone()
+
+    # 3. Lógica de validación segura
+    puede_editar = False
+
+    if curso and resultado:
+        # Si usas cursor de tipo diccionario (dictionary=True):
+        profesor_id_sesion = resultado['id']
+        
+        # Si usas cursor estándar (tuplas), usa esta línea en su lugar:
+        # profesor_id_sesion = resultado[0]
+        
+        puede_editar = (curso['profesor_id'] == profesor_id_sesion)
 
     cursor.execute("""
         SELECT *
@@ -556,11 +650,12 @@ def insviewcourse(curso_id):
 
 @profesor_bp.route("/createcourse", methods=["GET", "POST"])
 def createcourse():
+    conexion = db.get_db()
 
     if "user_id" not in session:
         return redirect(url_for("login"))
 
-    usuario_id = session["user_id"]
+    estudiante_id = session["user_id"]
     errores = []
 
     # ==========================================
@@ -614,9 +709,30 @@ def createcourse():
         # ==========================================
         # INSERTAR NUEVO CURSO
         # ==========================================
-        cursor = db.conexion.cursor()
+        cursor = conexion.cursor()
+
+        cursor.execute("""
+    SELECT id
+    FROM profesor 
+    WHERE estudiante_id = %s
+""", (estudiante_id,))
+
+        resultado = cursor.fetchone()
+
+        # Validar que el estudiante verdaderamente sea profesor antes de insertar
+        if not resultado:
+            cursor.close()
+            return "No tienes un perfil de profesor verificado", 403
+
+        # 2. Extraer el ID numérico
+        # Si usas cursor normal (tuplas):
+        profesor_id = resultado[0]
+
+        # O si usas cursor con diccionario (dictionary=True):
+        # profesor_id = resultado['id']
 
         try:
+            # 3. Insertar pasando la variable con el ID extraído (profesor_id)
             cursor.execute("""
                 INSERT INTO cursos (titulo, descripcion, contenido, profesor_id)
                 VALUES (%s, %s, %s, %s)
@@ -624,16 +740,16 @@ def createcourse():
                 titulo,
                 descripcion,
                 contenido,
-                usuario_id
+                profesor_id  # <--- Aquí pasas el número entero (ej: 5)
             ))
 
-            db.conexion.commit()
+            conexion.commit()
             cursor.close()
 
             return redirect(url_for("profesor.cursosCreados"))
 
         except Exception as e:
-            db.conexion.rollback()
+            conexion.rollback()
             cursor.close()
 
             return render_template(
@@ -655,13 +771,14 @@ def createcourse():
 
 @profesor_bp.route("/editcourse/<int:id>", methods=["GET", "POST"])
 def editcourse(id):
+    conexion = db.get_db()
 
     if "user_id" not in session:
         return redirect(url_for("login"))
 
-    usuario_id = session["user_id"]
+    estudiante_id = session["user_id"]
 
-    cursor = db.conexion.cursor(dictionary=True)
+    cursor = conexion.cursor(dictionary=True)
 
     # ==========================================
     # VERIFICAR QUE EL CURSO PERTENECE
@@ -669,11 +786,14 @@ def editcourse(id):
     # ==========================================
 
     cursor.execute("""
-        SELECT *
+        SELECT 
+            cursos.*
         FROM cursos
-        WHERE id = %s
-        AND profesor_id = %s
-    """, (id, usuario_id))
+        INNER JOIN profesor 
+            ON profesor.id = cursos.profesor_id
+        WHERE cursos.id = %s 
+        AND profesor.estudiante_id = %s
+    """, (id, estudiante_id))
 
     curso = cursor.fetchone()
 
@@ -787,22 +907,23 @@ def editcourse(id):
         try:
 
             cursor.execute("""
-                UPDATE cursos
-                SET
-                    titulo = %s,
-                    descripcion = %s,
-                    contenido = %s
-                WHERE id = %s
-                AND profesor_id = %s
-            """, (
-                titulo,
-                descripcion,
-                contenido,
-                id,
-                usuario_id
-            ))
-
-            db.conexion.commit()
+            UPDATE cursos
+            INNER JOIN profesor 
+                ON profesor.id = cursos.profesor_id
+            SET 
+                cursos.titulo = %s,
+                cursos.descripcion = %s,
+                cursos.contenido = %s
+            WHERE cursos.id = %s
+            AND profesor.estudiante_id = %s
+        """, (
+            titulo,
+            descripcion,
+            contenido,
+            id,
+            estudiante_id
+        ))
+            conexion.commit()
 
             cursor.close()
 
@@ -815,7 +936,7 @@ def editcourse(id):
 
         except Exception as e:
 
-            db.conexion.rollback()
+            conexion.rollback()
             cursor.close()
 
             return render_template(
@@ -840,25 +961,44 @@ def editcourse(id):
 
 # ViewLesson-------------------------------------------------------------------------------------------------------#
 
-@profesor_bp.route("/deleteCUR/<int:id>", methods=["POST"])
-def deleteCUR(id):
-    cursor = db.conexion.cursor()
+@profesor_bp.route("/deleteCURSO/<int:id>", methods=["POST"])
+def deleteCURSO(id):
+    conexion = db.get_db()
+
+    cursor = conexion.cursor()
     sql = "DELETE FROM cursos WHERE id = %s"
     data = (id,)
     cursor.execute(sql, data)
-    db.conexion.commit()
+    conexion.commit()
     return redirect(url_for("profesor.menuInstru"))
 
 # ViewLesson-------------------------------------------------------------------------------------------------------#
 @profesor_bp.route("/insViewlesson/<int:id>")
 def insViewlesson(id):
-
+    conexion = db.get_db()
+    cursor = conexion.cursor(dictionary=True)
+    
     if "user_id" not in session:
-        return redirect(url_for("login"))
-
-    usuario_id = session["user_id"]
-
-    cursor = db.conexion.cursor(dictionary=True)
+            return redirect(url_for("login"))
+        
+    estudiante_id=session["user_id"]
+    
+    cursor.execute("""
+            SELECT id
+            FROM profesor 
+            WHERE estudiante_id = %s
+        """, (estudiante_id,))
+        
+    resultado=cursor.fetchone()
+        
+                # Validar que el estudiante verdaderamente sea profesor antes de insertar
+    if not resultado:
+            cursor.close()
+            return "No tienes un perfil de profesor verificado", 403
+        
+                # 2. Extraer el ID numérico
+                # Si usas cursor normal (tuplas):
+    profesor_id = resultado["id"]
 
     # ==========================================
     # OBTENER LA LECCIÓN Y EL PROFESOR
@@ -886,7 +1026,7 @@ def insViewlesson(id):
     # ==========================================
 
     puede_editar = (
-        leccion["profesor_id"] == usuario_id
+        leccion["profesor_id"] == profesor_id
     )
 
     # ==========================================
@@ -921,14 +1061,32 @@ def insViewlesson(id):
 
 @profesor_bp.route("/editlesson/<int:id>", methods=["GET", "POST"])
 def editlesson(id):
+    conexion = db.get_db()
+    cursor = conexion.cursor(dictionary=True)
 
     if "user_id" not in session:
         return redirect(url_for("login"))
 
-    usuario_id = session["user_id"]
+    estudiante_id=session["user_id"]
 
-    cursor = db.conexion.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT id
+        FROM profesor 
+        WHERE estudiante_id = %s
+    """, (estudiante_id,))
+    
+    resultado=cursor.fetchone()
+    
+            # Validar que el estudiante verdaderamente sea profesor antes de insertar
+    if not resultado:
+        cursor.close()
+        return "No tienes un perfil de profesor verificado", 403
+    
+            # 2. Extraer el ID numérico
+            # Si usas cursor normal (tuplas):
+    profesor_id = resultado["id"]
 
+    
     # ==========================================
     # COMPROBAR QUE LA LECCIÓN EXISTE
     # Y QUE PERTENECE AL PROFESOR
@@ -950,7 +1108,7 @@ def editlesson(id):
         cursor.close()
         return "Lección no encontrada", 404
 
-    if leccion["profesor_id"] != usuario_id:
+    if leccion["profesor_id"] != profesor_id:
         cursor.close()
         return "No tienes permiso para editar esta lección", 403
 
@@ -1081,10 +1239,10 @@ def editlesson(id):
                 1
             )[1].lower()
 
-            if extension != "pdf":
+            if extension != "pdf" or extension != "docx":
 
                 errores.append(
-                    f"El archivo '{nombre}' debe ser PDF."
+                    f"El archivo '{nombre}' debe ser PDF o WORD."
                 )
 
                 continue
@@ -1346,7 +1504,7 @@ def editlesson(id):
         # GUARDAR CAMBIOS
         # ==========================================
 
-        db.conexion.commit()
+        conexion.commit()
 
         cursor.close()
 
@@ -1374,13 +1532,32 @@ def editlesson(id):
 
 @profesor_bp.route("/newlesson/<int:curso_id>", methods=["GET", "POST"])
 def newlesson(curso_id):
+    conexion = db.get_db()
+    cursor = conexion.cursor(dictionary=True)
 
     if "user_id" not in session:
         return redirect(url_for("login"))
 
-    usuario_id = session["user_id"]
+    estudiante_id=session["user_id"]
+    
+    cursor.execute("""
+            SELECT id
+            FROM profesor 
+            WHERE estudiante_id = %s
+        """, (estudiante_id,))
+        
+    resultado=cursor.fetchone()
+        
+                # Validar que el estudiante verdaderamente sea profesor antes de insertar
+    if not resultado:
+            cursor.close()
+            return "No tienes un perfil de profesor verificado", 403
+        
+                # 2. Extraer el ID numérico
+                # Si usas cursor normal (tuplas):
+    profesor_id = resultado["id"]
 
-    cursor = db.conexion.cursor(dictionary=True)
+
 
     errores = []
 
@@ -1403,7 +1580,7 @@ def newlesson(curso_id):
         cursor.close()
         return "Curso no encontrado", 404
 
-    if curso["profesor_id"] != usuario_id:
+    if curso["profesor_id"] != profesor_id:
         cursor.close()
         return "No tienes permiso para crear una lección en este curso", 403
 
@@ -1647,7 +1824,7 @@ def newlesson(curso_id):
         # GUARDAR TODO
         # ==========================================
 
-        db.conexion.commit()
+        conexion.commit()
 
         cursor.close()
 
@@ -1689,13 +1866,31 @@ def newlesson(curso_id):
 
 @profesor_bp.route("/delete_lesson/<int:id>", methods=["POST"])
 def delete_lesson(id):
+    conexion = db.get_db()
+    cursor = conexion.cursor(dictionary=True)
 
     if "user_id" not in session:
         return redirect(url_for("login"))
 
-    usuario_id = session["user_id"]
+    estudiante_id=session["user_id"]
 
-    cursor = db.conexion.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT id
+        FROM profesor 
+        WHERE estudiante_id = %s
+    """, (estudiante_id,))
+    
+    resultado=cursor.fetchone()
+    
+            # Validar que el estudiante verdaderamente sea profesor antes de insertar
+    if not resultado:
+        cursor.close()
+        return "No tienes un perfil de profesor verificado", 403
+    
+            # 2. Extraer el ID numérico
+            # Si usas cursor normal (tuplas):
+    profesor_id = resultado["id"]
+
 
     # Obtener curso y comprobar propietario
     cursor.execute("""
@@ -1714,7 +1909,7 @@ def delete_lesson(id):
         cursor.close()
         return "Lección no encontrada", 404
 
-    if resultado["profesor_id"] != usuario_id:
+    if resultado["profesor_id"] != profesor_id:
         cursor.close()
         return "No tienes permiso para eliminar esta lección", 403
 
@@ -1752,7 +1947,7 @@ def delete_lesson(id):
         WHERE id = %s
     """, (id,))
 
-    db.conexion.commit()
+    conexion.commit()
     cursor.close()
 
     # Ahora usamos el curso_id que obtuvimos antes

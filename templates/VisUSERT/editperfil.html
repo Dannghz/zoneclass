@@ -259,7 +259,7 @@
 
   <body>
     <div class="contenedor">
-      <a href="{{ url_for('usuarios.profile') }}" class="volver"> ← Volver al perfil </a>
+      <a href="{{ url_for('estudiante.profile') }}" class="volver"> ← Volver al perfil </a>
 
       <div class="card">
         <div class="titulo">
@@ -280,7 +280,7 @@
         {% endif %}
 
         <form
-          action="{{ url_for('usuarios.editprofile', id=user.id) }}"
+          action="{{ url_for('estudiante.editprofile', id=user.id) }}"
           method="POST"
           enctype="multipart/form-data"
           class="formulario"
@@ -293,7 +293,7 @@
             <img
               id="preview"
               class="foto-preview"
-              src="{{ url_for('usuarios.mostrar_foto', id=user.id) }}"
+              src="{{ url_for('estudiante.mi_foto') }}"
               alt="Foto de perfil"
             />
 
@@ -392,7 +392,7 @@
           <!-- BOTONES -->
 
           <div class="botones">
-            <a href="{{ url_for('usuarios.profile') }}" class="btn btn-cancelar">
+            <a href="{{ url_for('estudiante.profile') }}" class="btn btn-cancelar">
               Cancelar
             </a>
 

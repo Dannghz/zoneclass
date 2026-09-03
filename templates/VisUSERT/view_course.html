@@ -492,7 +492,7 @@
                     <!-- FOTO O AVATAR DEL PROFESOR -->
                     <div class="profesor-avatar-container">
                         {% if curso.profesor_foto %}
-                        <img src="{{ url_for('profesor.mostrar_foto', id=curso.profesor_id) }}"
+                        <img src="{{ url_for('profesor.mostrar_foto', profesor_id=curso.profesor_id) }}"
                             alt="Profesor(a) {{ curso.profesor_nombre }}">
                         {% else %}
                         <svg class="profesor-avatar-svg" viewBox="0 0 24 24">
@@ -550,7 +550,7 @@
                             inicia sesión o crea una cuenta.
                         </p>
 
-                        <a href="{{ url_for('login', next=url_for('usuarios.view_course', curso_id=curso.id)) }}"
+                        <a href="{{ url_for('login', next=url_for('estudiante.view_course', curso_id=curso.id)) }}"
                             class="btn-login-course">
                             <i class="bi bi-box-arrow-in-right me-2"></i>
                             Iniciar sesión
@@ -605,7 +605,7 @@
 
                         {% else %}
 
-                        <a href="{{ url_for('login', next=url_for('usuarios.view_course', curso_id=curso.id)) }}"
+                        <a href="{{ url_for('login', next=url_for('estudiante.view_course', curso_id=curso.id)) }}"
                             class="btn-go-lesson">
                             <i class="bi bi-lock-fill me-1"></i>
                             Iniciar sesión para ver

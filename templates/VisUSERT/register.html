@@ -279,7 +279,7 @@
         {% endif %}
 
         <form
-          action="{{ url_for('usuarios.register') }}"
+          action="{{ url_for('estudiante.register') }}"
           method="POST"
           enctype="multipart/form-data"
           class="formulario"
@@ -289,13 +289,7 @@
           <div class="foto-container campo-completo">
             
 
-            <img
-              id="preview"
-              class="foto-preview"
-              src="{{ url_for('usuarios.mi_foto') }}"
-              alt="Foto de perfil"
-            />
-
+      
             
 
             <div id="foto-vacia" class="foto-vacia">👤</div>
